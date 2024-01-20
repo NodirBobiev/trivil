@@ -1,0 +1,54 @@
+{
+  "name": "Trivil",
+  "scopeName": "source.tri",
+  "fileTypes": ["tri"],
+  "patterns": [
+
+    {
+      "name": "keyword.control.trivil",
+      "match": "\\b(авария|вернуть|вход|выбор|другое|если|иначе|импорт|класс|когда|конст|мб|модуль|надо|осторожно|пока|позже|прервать|пусть|среди|тип|типа|фн|цикл)\\b"
+    },
+
+    {
+      "name": "comment.line.double-slash.trivil",
+      "begin": "//",
+      "end": "$",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.trivil" }
+      },
+      "patterns": [
+        { "match": ".+", "name": "comment.line.trivil" }
+      ]
+    }, 
+    {
+      "name": "comment.block.trivil",
+      "begin": "/\\*",
+      "end": "\\*/",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.begin.trivil" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.comment.end.trivil" }
+      }
+    },
+    {
+      "name": "string.quoted.double.trivil",
+      "begin": "\"",
+      "end": "\"|\\n",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.trivil" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.trivil" }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.trivil",
+          "match": "\\\\.|\\$\\{|\\`"
+        }
+      ]
+    }
+  ],
+  "repository": {
+  }
+}

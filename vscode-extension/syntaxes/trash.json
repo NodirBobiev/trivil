@@ -1,0 +1,17 @@
+{
+    "name": "meta.import.trivil",
+    "begin": "\\b(импорт)",
+    "beginCaptures": {
+      "0": { "name": "keyword.control.import.trivil" }
+    },
+    "end": "$",
+    "endCaptures": {
+      "0": { "name": "punctuation.definition.string.end.trivil" }
+    },
+    "patterns": [
+      {
+        "name": "entity.name.tag.trivil",
+        "match": "\\s\"[^\"]+\""
+      }
+    ]
+}

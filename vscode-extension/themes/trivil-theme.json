@@ -1,0 +1,35 @@
+{
+  "name": "Trivil Theme",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#1E1E1E",
+    "editor.foreground": "#D4D4D4"
+  },
+  "tokenColors": [
+    {
+      "scope": "entity.name.module.trivil",
+      "settings": {
+        "foreground": "#4EC9B0",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "scope": "keyword.control",
+      "settings": {
+        "foreground": "#C586C0"
+      }
+    },
+    {
+      "scope": "comment.line.trivil",
+      "settings": {
+        "foreground": "#608B4E"
+      }
+    },
+    {
+        "scope": "string.quoted.double.trivil",
+        "settings": {
+          "foreground": "#CE9178"
+        }
+    }
+  ]
+}

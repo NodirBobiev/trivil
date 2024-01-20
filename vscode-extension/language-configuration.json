@@ -1,0 +1,35 @@
+{
+  "comments": {
+    "lineComment": "//",       // Set this to your language's line comment syntax
+    "blockComment": ["/*", "*/"] // Set this to your language's block comment syntax, if applicable
+  },
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+    // Add any additional bracket pairs your language uses
+  ],
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" }
+    // Add any other pairs that should auto-close, such as quotation marks or custom delimiters
+  ],
+  "surroundingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" }
+    // The same as auto-closing pairs, or include additional pairs that users might want to insert as a pair
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*//\\s*#region", // Customize with the pattern to start a folding region in your language
+      "end": "^\\s*//\\s*#endregion"  // Customize with the pattern to end a folding region in your language
+    }
+  }
+  // Additional features, such as indentation rules, can also be defined here
+}

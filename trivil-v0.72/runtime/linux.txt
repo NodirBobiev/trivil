@@ -1,0 +1,3 @@
+linux
+runtime: clang *files* -fPIC --shared -fno-omit-frame-pointer -ldl -lm -o libwelrt.so
+build: clang x.c -llibwelrt -ldl -lm -o target
