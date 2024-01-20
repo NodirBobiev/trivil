@@ -3,12 +3,6 @@
   "scopeName": "source.tri",
   "fileTypes": ["tri"],
   "patterns": [
-
-    {
-      "name": "keyword.control.trivil",
-      "match": "\\b(авария|вернуть|вход|выбор|другое|если|иначе|импорт|класс|когда|конст|мб|модуль|надо|осторожно|пока|позже|прервать|пусть|среди|тип|типа|фн|цикл)\\b"
-    },
-
     {
       "name": "comment.line.double-slash.trivil",
       "begin": "//",
@@ -32,19 +26,78 @@
       }
     },
     {
+      "name": "keyword.control.trivil",
+      "match": "(?<![-№\\w])(авария|вернуть|вход|выбор|другое|если|иначе|импорт|класс|когда|конст|мб|модуль|надо|осторожно|пока|позже|прервать|пусть|среди|тип|типа|фн|цикл)(?![-\\w?!№])"
+    },
+    {
+      "name": "keyword.operator.trivil",
+      "match": "\\*|\\/|%|\\+|\\-|\\=|\\#|<|<=|>|>=|&|\\|"
+    },
+    {
+      "name": "entity.name.type.trivil",
+      "match": "(?<![-№\\w])(Байт|Цел64|Слово64|Вещ64|Лог|Символ|Строка|Строка8)(?![-\\w?!№])"
+    },
+    {
+      "name": "constant.language.boolean.trivil",
+      "match": "(?<![-№\\w])(ложь|истина)(?![-\\w?!№])"
+    },
+    {
+      "name": "constant.language.null.trivil",
+      "match": "(?<![-№\\w])пусто(?![-\\w?!№])"
+    },
+    {
       "name": "string.quoted.double.trivil",
       "begin": "\"",
       "end": "\"|\\n",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.string.begin.trivil" }
+        "0": {
+          "name": "punctuation.definition.string.begin.trivil"
+        }
       },
       "endCaptures": {
-        "0": { "name": "punctuation.definition.string.end.trivil" }
+        "0": {
+          "name": "punctuation.definition.string.end.trivil",
+          "patterns":[
+            {
+              "match": "\\n",
+              "name": "invalid.illegal.newline.trivil"
+            }
+          ]
+        }
       },
       "patterns": [
         {
           "name": "constant.character.escape.trivil",
-          "match": "\\\\.|\\$\\{|\\`"
+          "match": "\\\\(u[0-9A-Fa-f]{4}|[nrt\"'])"
+        },
+        {
+          "match": "[^\"\\\\\\n\\r\\t]+",
+          "name": "string.content.trivil"
+        }
+      ]
+    },
+    {
+      "name": "constant.character.trivil",
+      "begin": "'",
+      "end": "'",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.character.begin.trivil"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.character.end.trivil"
+        }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.trivil",
+          "match": "\\\\(u[0-9A-Fa-f]{4}|[nrt'\"\\\\])"
+        },
+        {
+          "match": "[^'\\\\\\n\\r\\t]",
+          "name": "string.content.trivil"
         }
       ]
     }
