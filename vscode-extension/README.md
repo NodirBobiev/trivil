@@ -19,7 +19,7 @@ This extension provides basic syntax highlighting for the Trivil programming lan
 - Single-quoted characters (`''`)
 
 ## Example
-![Trivil Example Code](https://raw.githubusercontent.com/bobievnodir/trivil/master/assets/images/trivil-example.png)
+![Trivil Example Code](https://raw.githubusercontent.com/NodirBobiev/trivil/main/vscode-extension/assets/images/trivil-example.png)
 
 
 ---
