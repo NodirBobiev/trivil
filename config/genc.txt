@@ -1,0 +1,12 @@
+
+windows-build: clang #runtime#/rt_api.c #runtime#/rt_syscrash_win.c #runtime#/rt_sysapi.c #files# -I#runtime# -ldbghelp -Wl,-noimplib -fno-omit-frame-pointer -gline-tables-only  -o ../#target#.exe && del /f ..\#target#.exp
+windows-script: build.bat
+
+linux-build: pushd . && cd #genc# && clang #files# #runtime#/rt_api.c #runtime#/rt_sysapi.c #runtime#/rt_syscrash_linux.c -lm -rdynamic -I#runtime# -o ../#target#.exe && popd
+linux-script: build.sh
+
+darwin-build: pushd . && cd #genc# && clang #files# #runtime#/rt_api.c #runtime#/rt_sysapi.c #runtime#/rt_syscrash_linux.c -lm -rdynamic -I#runtime# -o ../#target#.exe && popd
+darwin-script: build.sh
+
+freebsd-build: pushd . && cd #genc# && clang #files# #runtime#/rt_api.c #runtime#/rt_sysapi.c #runtime#/rt_syscrash_linux.c -lm -lexecinfo -rdynamic -I#runtime# -o ../#target#.exe && popd
+freebsd-script: build.sh
