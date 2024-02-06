@@ -1,3 +1,3 @@
 # Trivil Programming Language
 
-Code Generator targeting JVM (Java Virtual Machine)
+The Trivil Progamming Language was designed by Alexey Nedorya.
