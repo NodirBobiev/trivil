@@ -3,3 +3,4 @@ node_modules
 extension-versions
 .idea
 _genc
+*.exe

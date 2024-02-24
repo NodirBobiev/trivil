@@ -1,0 +1,53 @@
+int varA = x:
+    0:  {
+            iconst_m1, iconst_0, iconst_1, ... iconst_5 ; for x from -1 to 5 respectively
+            bipush x                                    ; for x from -128 to 127
+            sipush x                                    ; for x from -32768 to 32767
+            ldc x                                       ; otherwise
+        }
+    1:  {
+            istore_0, istore_1, istore_2, istore_3      ; for varA having local number from 0 up to 3
+            istore <localNumber>                        ; otherwise
+        }
+
+Similarly for other types:
+    short, char are just ints:
+        short range is [-32768, 32767]
+        char range is [0, 65535]
+    boolean is int and accepts `false` and `true` rather than 0 and 1:
+        boolean domain is {false, true}
+    Int:
+        iload_0,  iload_1,  iload_2,  iload_3,  iload <localNumber>
+    long:
+        lconst_0, lconst_1,    -        -       ldc2_w <value>
+        lload_0,  lload_1,  lload_2,  lload_3   lload <localNumber>
+        lstore_0, lstore_1, lstore_2, lstore_3, lstore <localNumber>
+    float:
+        fconst_0, fconst_1, fconst_2,   -       ldc <value>
+        fload_0,  fload_1,  fload_2,  fload_3,  fload <localNumber>
+        fstore_0, fstore_1, fstore_2, fstore3,  fstore <localNumber>
+    double:
+        dconst_0, dconst_1,    -        -       ldc2_w <value>
+        dload_0,  dloat_1,  dload_2,  dload_3,  dload <localNumber>
+        dstore_0, dstore_1, dstore_2, dstore_3, dstore <localNumber>
+
+
+int[] arr = {<x>, <y>, <z>}:
+    bipush <arr_size>
+    newarray int
+    dup
+    iconst_0
+    bipush x
+    iastore
+    dup
+    iconst_1
+    bipush y
+    iastore
+    dup
+    iconst_2
+    bipush z
+    iastore
+    astore <arr_local_number>
+
+
+

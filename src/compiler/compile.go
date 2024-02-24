@@ -2,10 +2,10 @@ package compiler
 
 import (
 	"fmt"
-
 	"trivil/ast"
 	"trivil/env"
 	"trivil/genc"
+	"trivil/genjava"
 	"trivil/semantics"
 )
 
@@ -91,9 +91,10 @@ func (cc *compileContext) process(m *ast.Module) {
 		makeDef(m, cc.folders[m])
 	}
 
-	if *env.DoGen {
-		genc.Generate(m, m == cc.main)
-	}
+	genjava.Generate(m)
+	//if *env.DoGen {
+	//	genc.Generate(m, m == cc.main)
+	//}
 }
 
 func (cc *compileContext) orderedList() {
