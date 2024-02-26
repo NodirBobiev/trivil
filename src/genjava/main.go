@@ -1,7 +1,6 @@
 package genjava
 
 import (
-	"fmt"
 	"trivil/ast"
 	"trivil/jasmin"
 )
@@ -24,19 +23,18 @@ func (g *genContext) getMainClass() *jasmin.Class {
 	return g.pack.CreateClass(moduleMainClass, nil)
 }
 
-func Generate(m *ast.Module) {
+func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
 	if generator == nil {
 		generator = &genContext{
 			java:  jasmin.NewJasmin(),
 			scope: NewScope(),
 		}
 	}
-	generator.genModule(m)
-	fmt.Println("jasmin is started...")
-	generator.java.Show()
+	generator.genModule(m, main)
+	return generator.java
 }
 
-func (g *genContext) genModule(m *ast.Module) {
+func (g *genContext) genModule(m *ast.Module, main bool) {
 	g.pack = jasmin.NewPackage(m.Name, nil)
 	g.java.Set(g.pack)
 	g.scope.SetScope(m.Inner)
@@ -53,10 +51,10 @@ func (g *genContext) genModule(m *ast.Module) {
 			g.scope.SetEntity(x, f)
 		}
 	}
-	if m.Entry != nil {
-		g.genEntry(m.Entry)
+	if main && m.Entry != nil {
+		mainClass := jasmin.MainClass(g.genEntry(m.Entry))
+		g.java.Set(mainClass)
 	}
-
 }
 
 func (g *genContext) genTypeDecl(t *ast.TypeDecl) {
@@ -66,7 +64,13 @@ func (g *genContext) genTypeDecl(t *ast.TypeDecl) {
 	//} else {
 	//	accessFlag = jasmin.Private
 	//}
-	g.class = g.pack.CreateClass(t.Name, nil)
+	baseType := t.GetType().(*ast.ClassType).BaseTyp
+	var super *jasmin.Class
+	if baseType != nil {
+		e := g.scope.GetEntityByName(baseType.(*ast.TypeRef).TypeName)
+		super = e.(*jasmin.Class)
+	}
+	g.class = g.pack.CreateClass(t.Name, super)
 	g.java.Set(g.class)
 	g.scope.SetEntity(t, g.class)
 	switch x := t.GetType().(type) {
@@ -96,14 +100,15 @@ func (g *genContext) genField(f *ast.Field) {
 	// TODO: Initialize field with value
 }
 
-func (g *genContext) genEntry(f *ast.EntryFn) {
+func (g *genContext) genEntry(f *ast.EntryFn) *jasmin.Method {
 	g.class = g.getMainClass()
 	g.method = jasmin.MainMethod(g.class)
 	g.class.Set(g.method)
 	g.java.Set(g.method)
 	g.genStatementSeq(f.Seq)
-
+	method := g.method
 	g.method = nil
+	return method
 }
 
 func (g *genContext) genFunction(f *ast.Function) {

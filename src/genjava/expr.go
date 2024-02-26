@@ -13,8 +13,8 @@ func (g *genContext) genExpr(expr ast.Expr) jasmin.Sequence {
 		return jasmin.NewSequence(g.genIdent(x))
 	case *ast.LiteralExpr:
 		return jasmin.NewSequence(g.genLiteral(x))
-	//case *ast.SelectorExpr:
-	//	return g.genSelector(x)
+	case *ast.SelectorExpr:
+		return g.genSelector(x)
 	case *ast.BinaryExpr:
 		return g.genBinaryExpr(x)
 	case *ast.ClassCompositeExpr:
@@ -58,14 +58,14 @@ func (g *genContext) genIdent(id *ast.IdentExpr) jasmin.Instruction {
 	}
 }
 
-//func (g *genContext) genSelector(s *ast.SelectorExpr) jasmin.Sequence {
-//	switch x := s.Obj.(type) {
-//	case *ast.Field:
-//		field, typ := g.getFieldNameAndType(x)
-//		return append(g.genExpr(s.X), jasmin.GetField(field, typ))
-//	}
-//	panic(fmt.Sprintf("gen selector: unexpected expr: %+v", s.Obj))
-//}
+func (g *genContext) genSelector(s *ast.SelectorExpr) jasmin.Sequence {
+	switch x := s.Obj.(type) {
+	case *ast.Field:
+		field := g.scope.GetEntity(x)
+		return append(g.genExpr(s.X), jasmin.GetField(field.GetFull(), field.GetType()))
+	}
+	panic(fmt.Sprintf("gen selector: unexpected expr: %+v", s.Obj))
+}
 
 func (g *genContext) genBinaryExpr(e *ast.BinaryExpr) jasmin.Sequence {
 	x := append(g.genExpr(e.X), g.genExpr(e.Y)...)

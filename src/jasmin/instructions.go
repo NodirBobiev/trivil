@@ -59,7 +59,7 @@ func (c *ConstInstruction) String() string {
 	case *LongType:
 		return fmt.Sprintf("ldc2_w %v", c.Value)
 	case *DoubleType:
-		return fmt.Sprintf("dconst %v", c.Value)
+		return fmt.Sprintf("ldc2_w %v", c.Value)
 	default:
 		panic(fmt.Sprintf("unexpected type: %+v", c.Type))
 	}
@@ -221,7 +221,24 @@ func (i *InvokeSpecialInstruction) String() string {
 	return fmt.Sprintf("invokespecial %s", i.Method)
 }
 
-// ------
+// ---
+
+type InvokeStaticInstruction struct {
+	InstructionBase
+	Method string
+}
+
+func NewInvokeStaticInstruction(function string) *InvokeStaticInstruction {
+	return &InvokeStaticInstruction{
+		InstructionBase: NewInstructionBase(0, 1),
+		Method:          function,
+	}
+}
+func (i *InvokeStaticInstruction) String() string {
+	return fmt.Sprintf("invokestatic %s", i.Method)
+}
+
+// ---
 
 type AddInstruction struct {
 	InstructionBase

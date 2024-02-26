@@ -39,6 +39,10 @@ func InvokeSpecial(function string) Instruction {
 	return NewInvokeSpecialInstruction(function)
 }
 
+func InvokeStatic(function string) Instruction {
+	return NewInvokeStaticInstruction(function)
+}
+
 func Add(t Type) Instruction {
 	return NewAddInstruction(t)
 }

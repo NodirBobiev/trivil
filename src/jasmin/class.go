@@ -2,6 +2,8 @@ package jasmin
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -38,7 +40,6 @@ func (c *Class) CreateField(name string, typ Type) *Field {
 	c.Set(f)
 	return f
 }
-
 func (c *Class) String() string {
 	result := strings.Builder{}
 	result.WriteString(fmt.Sprintf(".class %s %s\n", c.AccessFlag, c.GetFull()))
@@ -56,6 +57,27 @@ func (c *Class) String() string {
 	}
 
 	return result.String()
+}
+func (c *Class) Save(dir string) {
+	dest := filepath.Join(dir, strings.ReplaceAll(c.GetFull(), "/", "_")+".j")
+	file, err := os.Create(dest)
+	if err != nil {
+		panic(fmt.Sprintf("save to %q: create: %s", dest, err))
+	}
+	defer file.Close()
+	_, err = file.WriteString(c.String())
+	if err != nil {
+		panic(fmt.Sprintf("save to %q: write: %s", dest, err))
+	}
+}
+
+func MainClass(methodToCall *Method) *Class {
+	class := NewClass("Main", nil)
+	method := MainMethod(class)
+	class.Set(method)
+	method.Append(Load(0, NewReferenceType("java/lang/String")))
+	method.Append(InvokeStatic(methodToCall.GetFull()))
+	return class
 }
 
 var (

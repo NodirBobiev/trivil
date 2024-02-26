@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"trivil/ast"
 	"trivil/env"
-	"trivil/genc"
 	"trivil/genjava"
+	"trivil/jasmin"
 	"trivil/semantics"
 )
 
 var _ = fmt.Printf
+var sourcePath string
 
 type compileContext struct {
 	main     *ast.Module
@@ -27,7 +28,7 @@ type compileContext struct {
 }
 
 func Compile(spath string) {
-
+	sourcePath = spath
 	var list = env.GetSources(spath)
 	var src = list[0]
 	if src.Err != nil {
@@ -52,6 +53,7 @@ func Compile(spath string) {
 func (cc *compileContext) build() {
 	cc.orderedList()
 
+	var gen *jasmin.Jasmin
 	for _, m := range cc.list {
 
 		if env.ErrorCount() != 0 {
@@ -63,24 +65,27 @@ func (cc *compileContext) build() {
 			//fmt.Printf("Анализ и генерация: '%s' %p\n", m.Name, m)
 		}
 
-		cc.process(m)
+		gen = cc.process(m)
 	}
+	if gen != nil {
+		gen.Save(sourcePath)
 
-	if env.ErrorCount() == 0 && *env.DoGen && *env.BuildExe {
-		genc.BuildExe(cc.list)
 	}
+	//if env.ErrorCount() == 0 && *env.DoGen && *env.BuildExe {
+	//	genc.BuildExe(cc.list)
+	//}
 }
 
 //=== process
 
-func (cc *compileContext) process(m *ast.Module) {
+func (cc *compileContext) process(m *ast.Module) *jasmin.Jasmin {
 
 	ast.CurHost = m
 	semantics.Analyse(m)
 	ast.CurHost = nil
 
 	if env.ErrorCount() != 0 {
-		return
+		return nil
 	}
 
 	if *env.ShowAST >= 2 {
@@ -91,7 +96,8 @@ func (cc *compileContext) process(m *ast.Module) {
 		makeDef(m, cc.folders[m])
 	}
 
-	genjava.Generate(m)
+	java := genjava.Generate(m, m == cc.main)
+	return java
 	//if *env.DoGen {
 	//	genc.Generate(m, m == cc.main)
 	//}
