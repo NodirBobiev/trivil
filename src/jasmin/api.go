@@ -35,12 +35,16 @@ func PutField(field string, typ Type) Instruction {
 	return NewPutFieldInstruction(field, typ)
 }
 
-func InvokeSpecial(function string) Instruction {
-	return NewInvokeSpecialInstruction(function)
+func InvokeSpecial(function string, t Type) Instruction {
+	return NewInvokeSpecialInstruction(function, t.(*MethodType))
 }
 
-func InvokeStatic(function string) Instruction {
-	return NewInvokeStaticInstruction(function)
+func InvokeStatic(function string, t Type) Instruction {
+	return NewInvokeStaticInstruction(function, t.(*MethodType))
+}
+
+func InvokeVirtual(function string, t Type) Instruction {
+	return NewInvokeVirtualInstruction(function, t.(*MethodType))
 }
 
 func Add(t Type) Instruction {
@@ -59,12 +63,20 @@ func Dup(t Type) Instruction {
 	return NewDupInstruction(t)
 }
 
+func Return(t Type) Instruction {
+	return NewReturnInstruction(t)
+}
+
+func Neg(t Type) Instruction {
+	return NewNegInstruction(t)
+}
+
 // ---
 
 func MainMethodType() Type {
-	return NewMethodType([]Type{NewArrayType(NewReferenceType("java/lang/String"))}, NewVoidType())
+	return NewMethodType(NewParametersType(NewArrayType(NewReferenceType("java/lang/String"))), NewVoidType())
 }
 
 func VoidMethodType() Type {
-	return NewMethodType([]Type{}, NewVoidType())
+	return NewMethodType(NewParametersType(), NewVoidType())
 }

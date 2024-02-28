@@ -63,17 +63,14 @@ func (m *Method) String() string {
 	for _, i := range m.Instructions {
 		result.WriteString(fmt.Sprintf("%s%s\n", tab(d), i))
 	}
-	result.WriteString(fmt.Sprintf("%sreturn\n", tab(d)))
 	result.WriteString(".end method\n")
 	return result.String()
 }
+
 func (m *Method) SetType(t Type) {
-	newMethodType, ok := t.(*MethodType)
-	if !ok {
+	if _, ok := t.(*MethodType); !ok {
 		panic(fmt.Sprintf("method set type: expected method type but got %+v", t))
 	}
-	curMethodType := m.Type.(*MethodType)
-	m.Locals += len(newMethodType.ParametersType) - len(curMethodType.ParametersType)
 	m.Type = t
 }
 func (m *Method) SetStatic(value bool) {
@@ -92,7 +89,8 @@ func DefaultConstructor(class *Class, super *Class) *Method {
 	m.SetStatic(false)
 	m.SetAccessFlag(Public)
 	if class != nil && super != nil {
-		m.Append(Load(0, NewReferenceType(class.GetFull())), InvokeSpecial(super.Constructor.GetFull()))
+		m.Append(Load(0, NewReferenceType(class.GetFull())),
+			InvokeSpecial(super.Constructor.GetFull(), super.Constructor.GetType()))
 	}
 	return m
 }
@@ -100,7 +98,7 @@ func DefaultConstructor(class *Class, super *Class) *Method {
 func MainMethod(class *Class) *Method {
 	m := NewMethod("main", class)
 	m.SetType(MainMethodType())
+	m.Locals = 1
 	m.SetAccessFlag(Public)
-	m.SetType(NewMethodType([]Type{NewArrayType(NewReferenceType("java/lang/String"))}, NewVoidType()))
 	return m
 }

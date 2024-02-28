@@ -1,6 +1,7 @@
 package genjava
 
 import (
+	"fmt"
 	"trivil/ast"
 	"trivil/jasmin"
 )
@@ -12,15 +13,17 @@ const (
 var generator *genContext
 
 type genContext struct {
-	java   *jasmin.Jasmin
-	pack   *jasmin.Package
-	class  *jasmin.Class
-	method *jasmin.Method
-	scope  *Scope
+	java          *jasmin.Jasmin
+	pack          *jasmin.Package
+	packMainClass *jasmin.Class
+	class         *jasmin.Class
+	method        *jasmin.Method
+	scope         *Scope
+	exprType      jasmin.Type
 }
 
 func (g *genContext) getMainClass() *jasmin.Class {
-	return g.pack.CreateClass(moduleMainClass, nil)
+	return g.packMainClass
 }
 
 func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
@@ -36,6 +39,7 @@ func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
 
 func (g *genContext) genModule(m *ast.Module, main bool) {
 	g.pack = jasmin.NewPackage(m.Name, nil)
+	g.packMainClass = g.pack.CreateClass(moduleMainClass, nil)
 	g.java.Set(g.pack)
 	g.scope.SetScope(m.Inner)
 	for _, d := range m.Decls {
@@ -126,24 +130,34 @@ func (g *genContext) genFunction(f *ast.Function) {
 	if f.Exported {
 		accessFlag = jasmin.Public
 	}
-
-	g.method = g.class.CreateMethod(f.GetName())
+	g.method = jasmin.NewMethod(f.GetName(), g.class)
+	//g.method = g.class.CreateMethod(f.GetName())
 	g.method.SetType(g.genType(f.Typ))
 	g.method.SetAccessFlag(accessFlag)
 	g.method.SetStatic(isStatic)
-
+	g.class.Set(g.method)
+	g.java.Set(g.method)
+	// if the function has a receiver, then the receiver is variable this
+	if f.Recv != nil {
+		varDecl := f.Seq.Inner.Names[f.Recv.GetName()]
+		this := jasmin.NewVariable(f.Recv.GetName(), g.method, g.genType(varDecl.GetType()), 0)
+		g.scope.SetEntity(varDecl, this)
+	}
+	// assign local var numbers to parameters
+	t := f.Typ.(*ast.FuncType)
+	for _, x := range t.Params {
+		varDecl := f.Seq.Inner.Names[x.GetName()]
+		paramVar := g.method.AssignNumber(jasmin.NewVariable(x.GetName(), g.method, g.genType(varDecl.GetType()), -1))
+		g.scope.SetEntity(varDecl, paramVar)
+	}
 	g.scope.SetEntity(f, g.method)
-
-	//if f.Recv != nil {
-	//	g.method.VarNumbers[f.Recv.GetName()] = 0
-	//	d, _ := f.Seq.Inner.Names[f.Recv.GetName()]
-	//}
 	g.genStatementSeq(f.Seq)
 
 	g.method = nil
 }
 
 func (g *genContext) genStatementSeq(s *ast.StatementSeq) {
+
 	for _, i := range s.Statements {
 		g.genStatement(i)
 	}
@@ -155,8 +169,12 @@ func (g *genContext) genStatement(s ast.Statement) {
 		g.genLocalDecl(x.D)
 	case *ast.AssignStatement:
 		g.genAssignStatement(x)
+	case *ast.Return:
+		g.genReturn(x)
+	case *ast.ExprStatement:
+		g.genExprStatement(x)
 	default:
-		panic("unknown statements")
+		panic(fmt.Sprintf("unexpected statements: %+v", s))
 	}
 }
 
@@ -180,22 +198,11 @@ func (g *genContext) genAssignStatement(a *ast.AssignStatement) {
 	g.method.Append(store)
 }
 
-//func (g *genContext) getAssignmentLeft(e *ast.Expr) (*jasmin.Sequence, *jasmin.Sequence) {
-//
-//}
+func (g *genContext) genReturn(e *ast.Return) {
+	instructions := g.genExpr(e.X)
+	g.method.Append(append(instructions, jasmin.Return(g.genType(e.ReturnTyp)))...)
+}
 
-//func (genc *genContext) genStringLiteral(li *ast.LiteralExpr) string {
-//
-//	if len(li.StrVal) == 0 {
-//		return fmt.Sprintf("%s()", rt_emptyString)
-//	}
-//
-//	var name = genc.localName(nm_stringLiteral)
-//	genc.g("static TString %s = NULL;", name)
-//
-//	var outs = encodeLiteralString(li.StrVal)
-//	//fmt.Printf("! байты=%d  символы=%d\n", len(outs), len(li.StrVal))
-//
-//	// передаю -1 в число байтов, чтобы не учитывать Си эскейп последовательности
-//	return fmt.Sprintf("%s(&%s, %d, %d, \"%s\")", rt_newLiteralString, name, -1, len(li.StrVal), outs)
-//}
+func (g *genContext) genExprStatement(e *ast.ExprStatement) {
+	g.method.Append(g.genExpr(e.X)...)
+}

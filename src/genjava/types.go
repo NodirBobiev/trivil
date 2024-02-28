@@ -42,9 +42,9 @@ func (g *genContext) genType(t ast.Type) jasmin.Type {
 }
 
 func (g *genContext) genFunctionType(t *ast.FuncType) jasmin.Type {
-	parametersType := make([]jasmin.Type, 0)
+	parametersType := jasmin.NewParametersType()
 	for _, p := range t.Params {
-		parametersType = append(parametersType, g.genType(p.GetType()))
+		*parametersType = append(*parametersType, g.genType(p.GetType()))
 	}
 	var returnType jasmin.Type
 	if t.ReturnTyp == nil {

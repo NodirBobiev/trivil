@@ -132,18 +132,36 @@ func NewArrayType(t Type) *ArrayType {
 
 type MethodType struct {
 	TypeBase
-	ParametersType []Type
-	ReturnType     Type
+	Parameters Type
+	Return     Type
 }
 
-func NewMethodType(parameters []Type, returnType Type) *MethodType {
-	var result string
-	for _, p := range parameters {
+func NewMethodType(parameters Type, returnType Type) *MethodType {
+	return &MethodType{
+		TypeBase:   NewTypeBase(fmt.Sprintf("%s%s", parameters, returnType), 1),
+		Parameters: parameters,
+		Return:     returnType,
+	}
+}
+
+// ParametersType
+
+type ParametersType []Type
+
+func NewParametersType(t ...Type) *ParametersType {
+	result := &ParametersType{}
+	*result = append(*result, t...)
+	return result
+}
+func (p *ParametersType) StackSlot() (total int) {
+	for _, t := range *p {
+		total += t.StackSlot()
+	}
+	return
+}
+func (p *ParametersType) String() (result string) {
+	for _, p := range *p {
 		result += p.String()
 	}
-	return &MethodType{
-		TypeBase:       NewTypeBase(fmt.Sprintf("(%s)%s", result, returnType), 1),
-		ParametersType: parameters,
-		ReturnType:     returnType,
-	}
+	return "(" + result + ")"
 }

@@ -76,7 +76,7 @@ func MainClass(methodToCall *Method) *Class {
 	method := MainMethod(class)
 	class.Set(method)
 	method.Append(Load(0, NewReferenceType("java/lang/String")))
-	method.Append(InvokeStatic(methodToCall.GetFull()))
+	method.Append(InvokeStatic(methodToCall.GetFull(), methodToCall.GetType()))
 	return class
 }
 

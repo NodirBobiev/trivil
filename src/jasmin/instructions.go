@@ -208,13 +208,14 @@ func (p *PutStaticInstruction) String() string {
 type InvokeSpecialInstruction struct {
 	InstructionBase
 	Method string
-	// TODO: Implement Method type as well.
+	Type   Type
 }
 
-func NewInvokeSpecialInstruction(function string) *InvokeSpecialInstruction {
+func NewInvokeSpecialInstruction(function string, t *MethodType) *InvokeSpecialInstruction {
 	return &InvokeSpecialInstruction{
-		InstructionBase: NewInstructionBase(0, 1),
+		InstructionBase: NewInstructionBase(t.Return.StackSlot(), t.Parameters.StackSlot()),
 		Method:          function,
+		Type:            t,
 	}
 }
 func (i *InvokeSpecialInstruction) String() string {
@@ -226,16 +227,37 @@ func (i *InvokeSpecialInstruction) String() string {
 type InvokeStaticInstruction struct {
 	InstructionBase
 	Method string
+	Type   Type
 }
 
-func NewInvokeStaticInstruction(function string) *InvokeStaticInstruction {
+func NewInvokeStaticInstruction(function string, t *MethodType) *InvokeStaticInstruction {
 	return &InvokeStaticInstruction{
-		InstructionBase: NewInstructionBase(0, 1),
+		InstructionBase: NewInstructionBase(t.Return.StackSlot(), t.Parameters.StackSlot()),
 		Method:          function,
+		Type:            t,
 	}
 }
 func (i *InvokeStaticInstruction) String() string {
 	return fmt.Sprintf("invokestatic %s", i.Method)
+}
+
+// ---
+
+type InvokeVirtualInstruction struct {
+	InstructionBase
+	Method string
+	Type   Type
+}
+
+func NewInvokeVirtualInstruction(function string, t *MethodType) *InvokeVirtualInstruction {
+	return &InvokeVirtualInstruction{
+		InstructionBase: NewInstructionBase(t.Return.StackSlot(), t.Parameters.StackSlot()),
+		Method:          function,
+		Type:            t,
+	}
+}
+func (i *InvokeVirtualInstruction) String() string {
+	return fmt.Sprintf("invokevirtual %s", i.Method)
 }
 
 // ---
@@ -321,4 +343,60 @@ func NewDupInstruction(t Type) *DupInstruction {
 }
 func (i *DupInstruction) String() string {
 	return "dup"
+}
+
+// ---
+
+type ReturnInstruction struct {
+	InstructionBase
+	Type Type
+}
+
+func NewReturnInstruction(t Type) *ReturnInstruction {
+	return &ReturnInstruction{
+		InstructionBase: NewInstructionBase(0, t.StackSlot()),
+		Type:            t,
+	}
+}
+func (i *ReturnInstruction) String() string {
+	switch i.Type.(type) {
+	case *VoidType:
+		return "return"
+	case *IntType:
+		return "ireturn"
+	case *LongType:
+		return "lreturn"
+	case *DoubleType:
+		return "dreturn"
+	case *ReferenceType:
+		return "areturn"
+	default:
+		panic(fmt.Sprintf("unknown type: %+v", i.Type))
+	}
+}
+
+// ---
+
+type NegInstruction struct {
+	InstructionBase
+	Type Type
+}
+
+func NewNegInstruction(t Type) *NegInstruction {
+	return &NegInstruction{
+		InstructionBase: NewInstructionBase(t.StackSlot(), t.StackSlot()),
+		Type:            t,
+	}
+}
+func (i *NegInstruction) String() string {
+	switch i.Type.(type) {
+	case *IntType:
+		return "ineg"
+	case *LongType:
+		return "lneg"
+	case *DoubleType:
+		return "dneg"
+	default:
+		panic(fmt.Sprintf("unknown type: %+v", i.Type))
+	}
 }

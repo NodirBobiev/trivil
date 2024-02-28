@@ -1,0 +1,16 @@
+модуль simple_class
+
+тип Human = класс{
+    age: Цел64 := 21
+    height: Вещ64 := позже
+}
+
+
+вход{
+    пусть hum := Human{
+        height: 180.4
+    }
+
+    hum.height := hum.height + 20.0
+}
+
