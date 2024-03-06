@@ -140,7 +140,11 @@ func (g *genContext) genCallExprInvoke(e ast.Expr) (jasmin.Sequence, jasmin.Inst
 		}
 	case *ast.SelectorExpr:
 		m := g.scope.GetEntity(x.Obj.(*ast.Function)).(*jasmin.Method)
-		return g.genExpr(x.X), jasmin.InvokeVirtual(m.GetFull(), m.GetType())
+		if x.X != nil {
+			return g.genExpr(x.X), jasmin.InvokeVirtual(m.GetFull(), m.GetType())
+		} else {
+			return jasmin.NewSequence(), jasmin.InvokeStatic(m.GetFull(), m.GetType())
+		}
 	}
 	panic(fmt.Sprintf("genCallExprInvoke: unexpected expr: %+v", e))
 }
