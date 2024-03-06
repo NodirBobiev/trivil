@@ -3,7 +3,6 @@ package jasmin
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 // ---
@@ -18,23 +17,26 @@ func (j *Jasmin) Store(f func() Entity) Entity {
 	j.Set(e)
 	return e
 }
-func (j *Jasmin) Save(sourceDir string) {
-	dir := filepath.Join(sourceDir, "generated")
-	err := os.Mkdir(dir, 0755)
+
+func (j *Jasmin) Save(sourceDir string) []string {
+	dir := sourceDir
+	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		panic(fmt.Sprintf("jasmin save: make dir: %q", dir))
 	}
+	files := make([]string, 0)
 	for _, x := range j.Entities {
 		switch p := x.(type) {
-		case *Package:
-			for _, c := range p.Entities {
-				cc := c.(*Class)
-				cc.Save(dir)
-			}
+		//case *Package:
+		//	for _, c := range p.Entities {
+		//		cc := c.(*Class)
+		//		cc.Save(dir)
+		//	}
 		case *Class:
-			p.Save(dir)
+			files = append(files, p.Save(dir))
 		}
 	}
+	return files
 }
 
 func NewJasmin() *Jasmin {

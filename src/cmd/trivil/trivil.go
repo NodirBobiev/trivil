@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/spf13/cobra"
 	"os"
 	"strings"
 
@@ -21,6 +22,13 @@ const (
 	prefix  = "+"
 	testOne = prefix + "тест"
 )
+
+var rootCmd = &cobra.Command{
+	Use: "trivil",
+	Run: func(cmd *cobra.Command, args []string) {
+
+	},
+}
 
 func main() {
 	// флаги определены в env.flags

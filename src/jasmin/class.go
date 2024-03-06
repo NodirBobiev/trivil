@@ -58,7 +58,7 @@ func (c *Class) String() string {
 
 	return result.String()
 }
-func (c *Class) Save(dir string) {
+func (c *Class) Save(dir string) string {
 	dest := filepath.Join(dir, strings.ReplaceAll(c.GetFull(), "/", "_")+".j")
 	file, err := os.Create(dest)
 	if err != nil {
@@ -69,6 +69,7 @@ func (c *Class) Save(dir string) {
 	if err != nil {
 		panic(fmt.Sprintf("save to %q: write: %s", dest, err))
 	}
+	return dest
 }
 
 func MainClass(methodToCall *Method) *Class {

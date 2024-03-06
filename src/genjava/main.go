@@ -40,6 +40,7 @@ func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
 func (g *genContext) genModule(m *ast.Module, main bool) {
 	g.pack = jasmin.NewPackage(m.Name, nil)
 	g.packMainClass = g.pack.CreateClass(moduleMainClass, nil)
+	g.java.Set(g.packMainClass)
 	g.java.Set(g.pack)
 	g.scope.SetScope(m.Inner)
 	for _, d := range m.Decls {

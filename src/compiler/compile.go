@@ -68,8 +68,13 @@ func (cc *compileContext) build() {
 		gen = cc.process(m)
 	}
 	if gen != nil {
-		gen.Save(sourcePath)
-
+		if *env.GenOut != "" {
+			files := gen.Save(*env.GenOut)
+			fmt.Printf("Generated: %d files\n", len(files))
+			for _, f := range files {
+				fmt.Printf("[%s]\n", f)
+			}
+		}
 	}
 	//if env.ErrorCount() == 0 && *env.DoGen && *env.BuildExe {
 	//	genc.BuildExe(cc.list)

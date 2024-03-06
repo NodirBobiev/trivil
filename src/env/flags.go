@@ -11,6 +11,7 @@ var (
 	ShowAST      = flag.Int("ast", 0, "ast=1 - after parser; ast=2 - after analyzer")
 	MakeDef      = flag.Bool("make_def", false, "делать файл с интерфейсом модуля")
 
+	GenOut   = flag.String("out", "", "path to store generated jasmin bytecode classes")
 	DoGen    = flag.Bool("gen", true, "включить генерацию")
 	BuildExe = flag.Bool("exe", true, "построить исполняемую программу")
 )

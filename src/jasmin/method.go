@@ -63,6 +63,9 @@ func (m *Method) String() string {
 	for _, i := range m.Instructions {
 		result.WriteString(fmt.Sprintf("%s%s\n", tab(d), i))
 	}
+	if _, ok := m.Type.(*MethodType).Return.(*VoidType); ok {
+		result.WriteString(fmt.Sprintf("%sreturn\n", tab(d)))
+	}
 	result.WriteString(".end method\n")
 	return result.String()
 }
