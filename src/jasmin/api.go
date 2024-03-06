@@ -80,3 +80,7 @@ func MainMethodType() Type {
 func VoidMethodType() Type {
 	return NewMethodType(NewParametersType(), NewVoidType())
 }
+
+func UnaryVoidMethodType(parameterType Type) Type {
+	return NewMethodType(NewParametersType(parameterType), NewVoidType())
+}

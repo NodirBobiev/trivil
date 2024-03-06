@@ -11,6 +11,6 @@
     .limit stack 1
     .limit locals 1
         aload 0
-        invokestatic counter/MainClass/main([Ljava/lang/String;)V
+        invokestatic print/MainClass/main([Ljava/lang/String;)V
         return
 .end method

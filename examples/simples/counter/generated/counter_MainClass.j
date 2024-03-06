@@ -5,6 +5,7 @@
     .limit locals 1
         aload 0
         invokespecial java/lang/Object/<init>()V
+        return
 .end method
 .method public static main([Ljava/lang/String;)V
     .limit stack 10
@@ -22,4 +23,5 @@
         invokevirtual counter/Counter/Increase(J)J
         aload 1
         invokevirtual counter/Counter/Reset()J
+        return
 .end method

@@ -10,31 +10,8 @@ const (
 	moduleMainClass = "MainClass"
 )
 
-var generator *genContext
-
-type genContext struct {
-	java          *jasmin.Jasmin
-	pack          *jasmin.Package
-	packMainClass *jasmin.Class
-	class         *jasmin.Class
-	method        *jasmin.Method
-	scope         *Scope
-	exprType      jasmin.Type
-}
-
 func (g *genContext) getMainClass() *jasmin.Class {
 	return g.packMainClass
-}
-
-func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
-	if generator == nil {
-		generator = &genContext{
-			java:  jasmin.NewJasmin(),
-			scope: NewScope(),
-		}
-	}
-	generator.genModule(m, main)
-	return generator.java
 }
 
 func (g *genContext) genModule(m *ast.Module, main bool) {
@@ -117,6 +94,10 @@ func (g *genContext) genEntry(f *ast.EntryFn) *jasmin.Method {
 }
 
 func (g *genContext) genFunction(f *ast.Function) {
+	if f.Mod != nil {
+		g.genExternalFunction(f)
+		return
+	}
 	var (
 		isStatic   bool
 		accessFlag jasmin.AccessFlag
@@ -155,6 +136,15 @@ func (g *genContext) genFunction(f *ast.Function) {
 	g.genStatementSeq(f.Seq)
 
 	g.method = nil
+}
+
+func (g *genContext) genExternalFunction(f *ast.Function) {
+	mod, ok := f.Mod.Attrs["имя"]
+	if !ok {
+		panic(fmt.Sprintf("имя modifier wasn't found"))
+	}
+	e := g.mods[mod]
+	g.scope.SetEntity(f, e)
 }
 
 func (g *genContext) genStatementSeq(s *ast.StatementSeq) {

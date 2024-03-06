@@ -1,4 +1,4 @@
-.class public Main
+.class public importer/MainClass
 .super java/lang/Object
 .method public <init>()V
     .limit stack 1
@@ -8,9 +8,7 @@
         return
 .end method
 .method public static main([Ljava/lang/String;)V
-    .limit stack 1
+    .limit stack 0
     .limit locals 1
-        aload 0
-        invokestatic counter/MainClass/main([Ljava/lang/String;)V
         return
 .end method

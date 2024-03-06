@@ -1,0 +1,11 @@
+модуль importer
+
+импорт "/home/cyrus/trivil/examples/simples/print"
+
+
+вход{
+    print.int64(10)
+    print.ln()
+    // print.float64(2.2345435)
+    // print.ln()
+}

@@ -84,9 +84,18 @@ func (m *Method) SetStatic(value bool) {
 	}
 	m.Static = value
 }
-func (c *Method) GetFull() string {
-	return c.EntityBase.GetFull() + c.Type.String()
+func (m *Method) GetFull() string {
+	return m.EntityBase.GetFull() + m.Type.String()
 }
+
+func NewFullMethod(name string, isStatic bool, flag AccessFlag, t Type, class *Class) *Method {
+	m := class.CreateMethod(name)
+	m.SetStatic(isStatic)
+	m.SetAccessFlag(flag)
+	m.SetType(t)
+	return m
+}
+
 func DefaultConstructor(class *Class, super *Class) *Method {
 	m := NewMethod("<init>", class)
 	m.SetStatic(false)
