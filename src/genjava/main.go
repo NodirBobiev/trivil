@@ -3,6 +3,7 @@ package genjava
 import (
 	"fmt"
 	"trivil/ast"
+	"trivil/env"
 	"trivil/jasmin"
 )
 
@@ -15,7 +16,7 @@ func (g *genContext) getMainClass() *jasmin.Class {
 }
 
 func (g *genContext) genModule(m *ast.Module, main bool) {
-	g.pack = jasmin.NewPackage(m.Name, nil)
+	g.pack = jasmin.NewPackage(env.OutName(m.GetName()), nil)
 	g.packMainClass = g.pack.CreateClass(moduleMainClass, nil)
 	g.java.Set(g.packMainClass)
 	g.java.Set(g.pack)
@@ -52,7 +53,7 @@ func (g *genContext) genTypeDecl(t *ast.TypeDecl) {
 		e := g.scope.GetEntityByName(baseType.(*ast.TypeRef).TypeName)
 		super = e.(*jasmin.Class)
 	}
-	g.class = g.pack.CreateClass(t.Name, super)
+	g.class = g.pack.CreateClass(env.OutName(t.GetName()), super)
 	g.java.Set(g.class)
 	g.scope.SetEntity(t, g.class)
 	switch x := t.GetType().(type) {
@@ -60,9 +61,9 @@ func (g *genContext) genTypeDecl(t *ast.TypeDecl) {
 		for _, f := range x.Fields {
 			g.genField(f)
 		}
-		for _, f := range x.Methods {
-			g.genFunction(f)
-		}
+		//for _, f := range x.Methods {
+		//	g.genFunction(f)
+		//}
 	}
 
 	g.class = nil
@@ -75,7 +76,7 @@ func (g *genContext) genField(f *ast.Field) {
 	} else {
 		accessFlag = jasmin.Protected
 	}
-	ff := g.class.CreateField(f.GetName(), g.genType(f.GetType()))
+	ff := g.class.CreateField(env.OutName(f.GetName()), g.genType(f.GetType()))
 	ff.SetAccessFlag(accessFlag)
 	g.java.Set(ff)
 	g.scope.SetEntity(f, ff)
@@ -112,7 +113,7 @@ func (g *genContext) genFunction(f *ast.Function) {
 	if f.Exported {
 		accessFlag = jasmin.Public
 	}
-	g.method = jasmin.NewMethod(f.GetName(), g.class)
+	g.method = jasmin.NewMethod(env.OutName(f.GetName()), g.class)
 	//g.method = g.class.CreateMethod(f.GetName())
 	g.method.SetType(g.genType(f.Typ))
 	g.method.SetAccessFlag(accessFlag)
@@ -122,14 +123,14 @@ func (g *genContext) genFunction(f *ast.Function) {
 	// if the function has a receiver, then the receiver is variable this
 	if f.Recv != nil {
 		varDecl := f.Seq.Inner.Names[f.Recv.GetName()]
-		this := jasmin.NewVariable(f.Recv.GetName(), g.method, g.genType(varDecl.GetType()), 0)
+		this := jasmin.NewVariable(env.OutName(f.Recv.GetName()), g.method, g.genType(varDecl.GetType()), 0)
 		g.scope.SetEntity(varDecl, this)
 	}
 	// assign local var numbers to parameters
 	t := f.Typ.(*ast.FuncType)
 	for _, x := range t.Params {
 		varDecl := f.Seq.Inner.Names[x.GetName()]
-		paramVar := g.method.AssignNumber(jasmin.NewVariable(x.GetName(), g.method, g.genType(varDecl.GetType()), -1))
+		paramVar := g.method.AssignNumber(jasmin.NewVariable(env.OutName(x.GetName()), g.method, g.genType(varDecl.GetType()), -1))
 		g.scope.SetEntity(varDecl, paramVar)
 	}
 	g.scope.SetEntity(f, g.method)
@@ -173,7 +174,7 @@ func (g *genContext) genLocalDecl(d ast.Decl) {
 	switch x := d.(type) {
 	case *ast.VarDecl:
 		t := g.genType(x.GetType())
-		e := g.method.AssignNumber(jasmin.NewVariable(x.GetName(), g.method, t, -1))
+		e := g.method.AssignNumber(jasmin.NewVariable(env.OutName(x.GetName()), g.method, t, -1))
 		g.scope.SetEntity(d, e)
 		g.method.Append(g.genExpr(x.Init)...)
 		g.method.Append(jasmin.Store(e.Number, t))

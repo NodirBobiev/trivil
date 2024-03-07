@@ -1,0 +1,16 @@
+/*
+BUG:
+The original compiler for the trivil-v0.72 prints 20000.6 instead of 20000.556. 
+Most likely, it tries to round it to the closest number with one digit after the decimal point.
+*/
+
+модуль вещ64-тест
+
+импорт "/home/cyrus/trivil/examples/simples/вывод"
+
+
+вход{
+    вывод.вещ64(20000.556) 
+    вывод.кс()
+}
+

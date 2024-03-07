@@ -87,6 +87,9 @@ func (g *genContext) genBinaryExpr(e *ast.BinaryExpr) jasmin.Sequence {
 	case lexer.SUB:
 		g.exprType = t
 		return append(x, jasmin.Sub(t))
+	case lexer.MUL:
+		g.exprType = t
+		return append(x, jasmin.Mul(t))
 	default:
 		panic(fmt.Sprintf("unexpected binary expr op: %+v", e.Op))
 

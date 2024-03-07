@@ -55,6 +55,10 @@ func Sub(t Type) Instruction {
 	return NewSubInstruction(t)
 }
 
+func Mul(t Type) Instruction {
+	return NewMulInstruction(t)
+}
+
 func New(t Type) Instruction {
 	return NewNewInstruction(t)
 }

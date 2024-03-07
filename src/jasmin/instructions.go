@@ -302,9 +302,33 @@ func (a *SubInstruction) String() string {
 	case *LongType:
 		return "lsub"
 	case *DoubleType:
-		return "lsub"
+		return "dsub"
 	default:
 		panic(fmt.Sprintf("sub instruction: unexpected type: %+v", a.Type))
+	}
+}
+
+// ------
+
+type MulInstruction struct {
+	InstructionBase
+	Type Type
+}
+
+func NewMulInstruction(t Type) *MulInstruction {
+	return &MulInstruction{
+		InstructionBase: NewInstructionBase(t.StackSlot(), 2*t.StackSlot()),
+		Type:            t,
+	}
+}
+func (i *MulInstruction) String() string {
+	switch i.Type.(type) {
+	case *LongType:
+		return "lmul"
+	case *DoubleType:
+		return "dmul"
+	default:
+		panic(fmt.Sprintf("mul instruction: unexpected type: %+v", i.Type))
 	}
 }
 
