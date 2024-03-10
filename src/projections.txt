@@ -1,0 +1,49 @@
+модуль мой-модуль
+    Each module will be a package in JVM, for example my_module
+    Each package in JVM will have MainClass which contains all its static fields and functions
+
+тип Человек = класс{...}
+    .class public my_module/Human
+    .super java/lang/Object
+
+If the class isn't derived, its super class will be java object class, otherwise the base class
+тип Учител = класс(Человек){...}
+    .class public my_module/Teacher
+    .super my_module/Human
+
+... класс{
+    возраст: Цел64 := 21            // not exported, so will have protected access flag
+    статус*: Вещ64 := 0.0           // exported, public access flag
+}
+    .field protected age J          // long type
+    .field public status D          // double type
+
+
+вход{...} - вход-функция
+    .method public static main([Ljava/lang/String;)V
+
+If a function doesn't have receiver, it is marked as static and implements the MainClass of the packge
+фн драйв(){}                        // The method belongs to the MainClass of the module
+    .class public my_module/MainClass
+    ...
+    .method protected static Drive()V
+
+фн драйв(a: Цел64): Вещ64{}         // The method receives a parameter of long and returns double
+    .method protected static Drive(J)D
+
+фн (м: Машина)драйв(){}             // The method drive belongs to class Machine
+    .class public my_module/Machine
+    ...
+    .method protected Drive()V
+
+The modifier tells the compiler that whenever the original function is
+called the specified function which is already implemented should be called instead
+фн цел64*(ц: Цел64) @внеш("имя":"print_int64")
+    In this specific case the print_int64 function is already implemented which basically prints longs
+
+фн ... {
+    пусть а := 100                  // If the type is not explicitly specified, it is derived from the value - long
+}
+    ldc2_w 100                      // load 100 to the stack as long value
+    lstore 1                        // store the value from the top of the stack to a variable number - 1 (a has number 1 in our example)
+
