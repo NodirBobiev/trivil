@@ -5,3 +5,5 @@ extension-versions
 _genc
 *.exe
 _си
+.class
+
