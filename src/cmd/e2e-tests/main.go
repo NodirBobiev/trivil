@@ -20,13 +20,15 @@ const (
 
 type Test interface {
 	GetName() string
+	GetGroup() string
 	GetID() string
 	Run() error
 }
 
 type TestBase struct {
-	Name string
-	ID   string
+	Name  string
+	Group string
+	ID    string
 }
 
 func (t *TestBase) GetName() string {
@@ -35,9 +37,12 @@ func (t *TestBase) GetName() string {
 func (t *TestBase) GetID() string {
 	return t.ID
 }
+func (t *TestBase) GetGroup() string {
+	return t.Group
+}
 
 func (t *TestBase) Run() error {
-	return fmt.Errorf("unimplemented")
+	return errors.New("unimplemented")
 }
 
 type SimpleTest struct {
@@ -49,34 +54,49 @@ type SimpleTest struct {
 
 func (t *SimpleTest) Run() error {
 
-	genOutput := fmt.Sprintf("/tmp/trivil-outputs/%s-%s", t.ProgramName, time.Now().Format("20060102150405"))
+	genDir := fmt.Sprintf("/tmp/trivil-outputs/%s-%s", t.ProgramName, time.Now().Format("20060102150405"))
 
-	fmt.Printf("genOutput: %s\n", genOutput)
-	stderr, _, err := runCommand(exec.Command(trivilPath, "-out", genOutput, t.PackagePath))
+	fmt.Printf("generated directory: %s\n", genDir)
+	// run trivil to generate jasmin files
+	_, err := runAndCheck("trivil", exec.Command(trivilPath, "-out", genDir, t.PackagePath))
 	if err != nil {
-		return fmt.Errorf("trivil error: %s", err)
+		return err
 	}
-	if stderr != "" {
-		return fmt.Errorf("trivil stderr: %s", stderr)
-	}
-	jasminFiles, err := getJasminFiles(genOutput)
+
+	// get generated jasmin files
+	jasminFiles, err := getJasminFiles(genDir)
 	if err != nil {
 		return fmt.Errorf("get jasmin files: %s", err)
 	}
-	args := append([]string{"-jar", jasminPath, "-d", genOutput}, jasminFiles...)
-	cmd := exec.Command(javaPath, args...)
 
-	stderr, _, err = runCommand(cmd)
-	//fmt.Println("stdout:", stdout)
-	//fmt.Println("stderr:", stderr)
+	// run jasmin to generate java class files
+	args := append([]string{"-jar", jasminPath, "-d", genDir}, jasminFiles...)
+	cmd := exec.Command(javaPath, args...)
+	_, err = runAndCheck("jasmin", cmd)
+
 	if err != nil {
-		return fmt.Errorf("jasmin error: %s", err)
+		return err
+	}
+
+	cmd = exec.Command(javaPath, "Main", "*")
+	cmd.Dir = genDir
+	stdout, err := runAndCheck("java", cmd)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("STDOUT:\n%s\n------\n", stdout)
+	return nil
+}
+
+func runAndCheck(name string, cmd *exec.Cmd) (string, error) {
+	stderr, stdout, err := runCommand(cmd)
+	if err != nil {
+		return stdout, fmt.Errorf("%s error: %s", name, err)
 	}
 	if stderr != "" {
-		return fmt.Errorf("jasmin stderr: %s", stderr)
+		return stdout, fmt.Errorf("%s stderr: %s", name, stderr)
 	}
-
-	return nil
+	return stdout, nil
 }
 
 func runCommand(cmd *exec.Cmd) (stderr, stdout string, err error) {
@@ -99,17 +119,19 @@ func runCommand(cmd *exec.Cmd) (stderr, stdout string, err error) {
 	}
 
 	stdoutScanner = bufio.NewScanner(stdoutPipe)
+	stdoutScanner.Split(bufio.ScanBytes)
 	stderrScanner = bufio.NewScanner(stderrPipe)
+	stderrScanner.Split(bufio.ScanBytes)
 	err = cmd.Start()
 	wg = sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for stderrScanner.Scan() {
-			stderr += stderrScanner.Text() + "\n"
+			stderr += stderrScanner.Text()
 		}
 		for stdoutScanner.Scan() {
-			stdout += stdoutScanner.Text() + "\n"
+			stdout += stdoutScanner.Text()
 		}
 	}()
 	wg.Wait()
@@ -122,7 +144,6 @@ func runCommand(cmd *exec.Cmd) (stderr, stdout string, err error) {
 		}
 		err = fmt.Errorf("cmd run: %s: %s", cmd.String(), err)
 	}
-
 	return
 }
 
@@ -140,12 +161,39 @@ func getJasminFiles(dir string) ([]string, error) {
 
 var tests = []Test{
 	&SimpleTest{
-		ProgramName: "counter",
-		PackagePath: "/home/cyrus/trivil/examples/simples/counter",
+		ProgramName: "cчётчик",
+		PackagePath: "/home/cyrus/trivil/examples/simples/cчётчик",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/cчётчик/output.txt",
 	},
 	&SimpleTest{
-		ProgramName: "local_decl",
-		PackagePath: "/home/cyrus/trivil/examples/simples/local_decl",
+		ProgramName: "арифметика",
+		PackagePath: "/home/cyrus/trivil/examples/simples/арифметика",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/арифметика/output.txt",
+	},
+	&SimpleTest{
+		ProgramName: "вещ64-тест",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вещ64-тест",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вещ64-тест/output.txt",
+	},
+	&SimpleTest{
+		ProgramName: "вывод",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вывод",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вывод/output.txt",
+	},
+	&SimpleTest{
+		ProgramName: "импортер",
+		PackagePath: "/home/cyrus/trivil/examples/simples/импортер",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/импортер/output.txt",
+	},
+	&SimpleTest{
+		ProgramName: "перемена",
+		PackagePath: "/home/cyrus/trivil/examples/simples/перемена",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/перемена/output.txt",
+	},
+	&SimpleTest{
+		ProgramName: "простой-класс",
+		PackagePath: "/home/cyrus/trivil/examples/simples/простой-класс",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/простой-класс/output.txt",
 	},
 }
 
