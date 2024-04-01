@@ -165,6 +165,8 @@ func (g *genContext) genStatement(s ast.Statement) {
 		g.genReturn(x)
 	case *ast.ExprStatement:
 		g.genExprStatement(x)
+	case *ast.If:
+		g.genIf(x)
 	default:
 		panic(fmt.Sprintf("unexpected statements: %+v", s))
 	}
@@ -197,4 +199,8 @@ func (g *genContext) genReturn(e *ast.Return) {
 
 func (g *genContext) genExprStatement(e *ast.ExprStatement) {
 	g.method.Append(g.genExpr(e.X)...)
+}
+
+func (g *genContext) genIf(s *ast.If) {
+
 }
