@@ -1,6 +1,7 @@
 package genjava
 
 import (
+	"fmt"
 	"trivil/ast"
 	"trivil/jasmin"
 	"trivil/jasmin/builtins"
@@ -17,6 +18,7 @@ type genContext struct {
 	scope         *Scope
 	exprType      jasmin.Type
 	mods          map[string]*jasmin.Method
+	labelCounter  int
 }
 
 func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
@@ -37,4 +39,13 @@ func (g *genContext) init() {
 	g.mods["print_float64"] = builtins.PrintDoubleMethod()
 	g.mods["println"] = builtins.PrintlnMethod()
 	g.java.Set(builtins.PrintClass())
+}
+
+func (g *genContext) genLabel(name string) string {
+	g.labelCounter++
+	return fmt.Sprintf("%s_%d", name, g.labelCounter)
+}
+
+func (g *genContext) resetMethod() {
+	g.labelCounter = 0
 }

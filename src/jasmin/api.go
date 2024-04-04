@@ -75,6 +75,12 @@ func Neg(t Type) Instruction {
 	return NewNegInstruction(t)
 }
 
+func Cmp(t Type) Instruction { return NewCmpInstruction(t) }
+
+func If(eq string, nextLabel string) Instruction { return NewIfInstruction(eq, nextLabel) }
+
+func Goto(label string) Instruction { return NewGotoInstruction(label) }
+
 // ---
 
 func MainMethodType() Type {

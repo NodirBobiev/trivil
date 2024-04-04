@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"io"
 	"os"
 	"os/exec"
@@ -27,15 +28,15 @@ type SimpleTest struct {
 }
 
 func (t *SimpleTest) Run() error {
-
+	zap.S().Infow("test is starting")
 	genDir := fmt.Sprintf("/tmp/trivil-outputs/%s-%s", t.ProgramName, time.Now().Format("20060102150405"))
 
-	fmt.Printf("generated directory: %s\n", genDir)
 	// run trivil to generate jasmin files
 	_, err := runAndCheck("trivil", exec.Command(trivilPath, "-out", genDir, t.PackagePath))
 	if err != nil {
 		return err
 	}
+	zap.S().Infow("generated", "directory", genDir)
 
 	// get generated jasmin files
 	jasminFiles, err := getJasminFiles(genDir)
@@ -66,7 +67,7 @@ func readAndCheckResults(filePath string, actualResult string) error {
 		return err
 	}
 	if string(expectedResult) != actualResult {
-		return fmt.Errorf("outputs don't match: expected %s but got %s", expectedResult, actualResult)
+		return fmt.Errorf("outputs don't match: expected %q but got %q", expectedResult, actualResult)
 	}
 	return nil
 }
@@ -83,7 +84,7 @@ func runAndCheck(name string, cmd *exec.Cmd) (string, error) {
 }
 
 func runCommand(cmd *exec.Cmd) (stderr, stdout string, err error) {
-	fmt.Printf("CMD: %q\n", cmd.String())
+	zap.S().Infow("running cli command", "cmd", cmd.String())
 	var (
 		stdoutPipe    io.ReadCloser
 		stderrPipe    io.ReadCloser

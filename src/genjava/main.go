@@ -167,6 +167,8 @@ func (g *genContext) genStatement(s ast.Statement) {
 		g.genExprStatement(x)
 	case *ast.If:
 		g.genIf(x)
+	case *ast.StatementSeq:
+		g.genStatementSeq(x)
 	default:
 		panic(fmt.Sprintf("unexpected statements: %+v", s))
 	}
@@ -193,8 +195,12 @@ func (g *genContext) genAssignStatement(a *ast.AssignStatement) {
 }
 
 func (g *genContext) genReturn(e *ast.Return) {
-	instructions := g.genExpr(e.X)
-	g.method.Append(append(instructions, jasmin.Return(g.genType(e.ReturnTyp)))...)
+	if e.X == nil {
+		g.method.Append(jasmin.Return(jasmin.NewVoidType()))
+	} else {
+		instructions := g.genExpr(e.X)
+		g.method.Append(append(instructions, jasmin.Return(g.genType(e.ReturnTyp)))...)
+	}
 }
 
 func (g *genContext) genExprStatement(e *ast.ExprStatement) {
@@ -202,5 +208,45 @@ func (g *genContext) genExprStatement(e *ast.ExprStatement) {
 }
 
 func (g *genContext) genIf(s *ast.If) {
+	gen := func(i *ast.If, nextLabel, skipLabel string) {
+		bin, _ := i.Cond.(*ast.BinaryExpr)
+		t := g.genType(bin.X.GetType())
+		eq := negate(bin.Op)
+		x := append(append(g.genExpr(bin.X), g.genExpr(bin.Y)...))
+		x = append(x, jasmin.Cmp(t), jasmin.If(eq, nextLabel))
+		g.method.Append(x...)
 
+		g.genStatementSeq(s.Then)
+		if skipLabel != "" {
+			g.method.Append(jasmin.Goto(skipLabel))
+		}
+	}
+	var (
+		endIfLabel  = g.genLabel("END_IF")
+		nextIfLabel string
+	)
+
+	for {
+		if s.Else != nil {
+			nextIfLabel = g.genLabel("ELSE_IF")
+		} else {
+			nextIfLabel = endIfLabel
+			endIfLabel = ""
+		}
+		gen(s, nextIfLabel, endIfLabel)
+		g.method.Append(jasmin.NewLabel(nextIfLabel))
+		if s.Else == nil {
+			break
+		}
+		if nextIf, ok := s.Else.(*ast.If); ok {
+			s = nextIf
+		} else {
+			g.genStatement(s.Else)
+			g.method.Append(jasmin.NewLabel(endIfLabel))
+			break
+		}
+	}
+	if s.Else == nil {
+		nextIfLabel = ""
+	}
 }

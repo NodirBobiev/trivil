@@ -424,3 +424,81 @@ func (i *NegInstruction) String() string {
 		panic(fmt.Sprintf("unknown type: %+v", i.Type))
 	}
 }
+
+// ----
+
+type CmpInstruction struct {
+	InstructionBase
+	Type Type
+}
+
+func NewCmpInstruction(t Type) *CmpInstruction {
+	return &CmpInstruction{
+		InstructionBase: NewInstructionBase(1, 2*t.StackSlot()),
+		Type:            t,
+	}
+}
+func (i *CmpInstruction) String() string {
+	switch i.Type.(type) {
+	case *LongType:
+		return "lcmp"
+	case *DoubleType:
+		return "dcmpl"
+	default:
+		panic(fmt.Sprintf("unknown type: %+v", i.Type))
+	}
+}
+
+// ----
+
+type IfInstruction struct {
+	InstructionBase
+	Code  string
+	Label string
+}
+
+func NewIfInstruction(eq string, label string) *IfInstruction {
+	return &IfInstruction{
+		InstructionBase: NewInstructionBase(0, 1),
+		Code:            "if" + eq,
+		Label:           label,
+	}
+}
+func (i *IfInstruction) String() string {
+	return fmt.Sprintf("%s %s", i.Code, i.Label)
+}
+
+// ---
+
+type GotoInstruction struct {
+	InstructionBase
+	Label string
+}
+
+func NewGotoInstruction(label string) *GotoInstruction {
+	return &GotoInstruction{
+		InstructionBase: NewInstructionBase(0, 0),
+		Label:           label,
+	}
+}
+
+func (i *GotoInstruction) String() string {
+	return fmt.Sprintf("goto %s", i.Label)
+}
+
+// ---
+
+type Label struct {
+	InstructionBase
+	Name string
+}
+
+func NewLabel(name string) *Label {
+	return &Label{
+		InstructionBase: NewInstructionBase(0, 0),
+		Name:            name,
+	}
+}
+func (l *Label) String() string {
+	return l.Name + ":"
+}

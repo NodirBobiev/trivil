@@ -23,6 +23,7 @@ func (g *genContext) genExpr(expr ast.Expr) jasmin.Sequence {
 		return g.genCallExpr(x)
 	case *ast.UnaryExpr:
 		return g.genUnaryExpr(x)
+
 	default:
 		panic(fmt.Sprintf("unknown ast expr: %+v", expr))
 	}
