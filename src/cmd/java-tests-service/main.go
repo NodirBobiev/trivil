@@ -110,9 +110,22 @@ func main() {
 		err := runTest(t)
 		if err != nil {
 			failedTests++
-			fmt.Println(ansi.Red.Wrap(fmt.Sprintf(" ✗ FAIL | %s\n\t  ERROR: %s", t.GetName(), err)))
+			fmt.Println(ansi.Red.Wrap(" ✗ FAIL | %s\n\t  ERROR: %s", t.GetName(), err))
 		} else {
-			fmt.Println(ansi.Green.Wrap(fmt.Sprintf(" ✓ OK   | %s", t.GetName())))
+			fmt.Println(ansi.Green.Wrap(" ✓ OK   | %s", t.GetName()))
 		}
 	}
+
+	success := 100.0 * float64(len(tests)-failedTests) / float64(len(tests))
+	color := ansi.Green
+	text := color.Wrap("\t%.1f%% passed", success)
+	if failedTests > 0 {
+		color = ansi.Yellow
+		text = color.Wrap(" %.1f%% passed | %d out %d failed", success, failedTests, len(tests))
+	}
+	fmt.Println()
+	fmt.Println(color.Wrap("============= Report ============="))
+	fmt.Println(text)
+	fmt.Println(color.Wrap("=================================="))
+
 }

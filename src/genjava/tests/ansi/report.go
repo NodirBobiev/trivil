@@ -1,5 +1,7 @@
 package ansi
 
+import "fmt"
+
 type Color int
 
 const (
@@ -18,6 +20,6 @@ var (
 	}
 )
 
-func (c Color) Wrap(msg string) string {
-	return ANSIColors[c] + msg + "\033[0m"
+func (c Color) Wrap(format string, args ...interface{}) string {
+	return ANSIColors[c] + fmt.Sprintf(format, args...) + "\033[0m"
 }
