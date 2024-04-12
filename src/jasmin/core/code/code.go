@@ -1,9 +1,9 @@
-package codes
+package code
 
 type Code int
 
 const (
-	Label = iota
+	Label Code = iota
 
 	Method
 	EndMethod
@@ -26,15 +26,19 @@ const (
 	Dload
 	Aload
 
+	Iadd
 	Ladd
 	Dadd
 
+	Isub
 	Lsub
 	Dsub
 
+	Ineg
 	Lneg
 	Dneg
 
+	Imul
 	Lmul
 	Dmul
 
@@ -56,7 +60,17 @@ const (
 	Invokevirtual
 
 	Return
+	Ireturn
 	Lreturn
 	Dreturn
 	Areturn
+
+	Goto
+
+	Ifne
+	Ifeq
+	Ifle
+	Ifgt
+	Ifge
+	Iflt
 )

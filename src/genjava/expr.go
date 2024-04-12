@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"trivil/ast"
 	"trivil/jasmin"
+	"trivil/jasmin/core/instruction"
+	"trivil/jasmin/core/tps"
 	"trivil/lexer"
 )
 
-func (g *genContext) genExpr(expr ast.Expr) jasmin.Sequence {
+func (g *genContext) genExpr(expr ast.Expr) instruction.S {
 	switch x := expr.(type) {
 	case *ast.IdentExpr:
 		return jasmin.NewSequence(g.genIdent(x))
@@ -29,23 +31,22 @@ func (g *genContext) genExpr(expr ast.Expr) jasmin.Sequence {
 	}
 }
 
-func (g *genContext) genLiteral(li *ast.LiteralExpr) jasmin.Instruction {
+func (g *genContext) genLiteral(li *ast.LiteralExpr) instruction.I {
 	switch li.Kind {
 	case ast.Lit_Int:
-		g.exprType = jasmin.NewLongType()
-		return jasmin.Const(li.IntVal, jasmin.NewLongType())
+		g.exprType = tps.Long
+		return instruction.Ldc2_w(li.IntVal)
 		//return fmt.Sprintf("%d", li.IntVal)
 	case ast.Lit_Word:
-		g.exprType = jasmin.NewLongType()
-		return jasmin.Const(li.WordVal, jasmin.NewLongType())
+		g.exprType = tps.Long
+		return instruction.Ldc2_w(li.WordVal)
 		//return fmt.Sprintf("0x%X", li.WordVal)
 	case ast.Lit_Float:
-		g.exprType = jasmin.NewDoubleType()
-		return jasmin.Const(li.FloatStr, jasmin.NewDoubleType())
-		//return li.FloatStr
+		g.exprType = tps.Double
+		return instruction.Ldc2_w(li.FloatStr)
 	case ast.Lit_Symbol:
-		g.exprType = jasmin.NewIntType()
-		return jasmin.Const(li.WordVal, jasmin.NewIntType())
+		g.exprType = tps.Int
+		return instruction.Iconst(li.IntVal)
 		//return fmt.Sprintf("0x%X", li.WordVal)
 	//case ast.Lit_String:
 	//	//return genc.genStringLiteral(li)
@@ -53,68 +54,51 @@ func (g *genContext) genLiteral(li *ast.LiteralExpr) jasmin.Instruction {
 		panic("ni")
 	}
 }
-func (g *genContext) genIdent(id *ast.IdentExpr) jasmin.Instruction {
-	switch x := id.Obj.(type) {
-	case *ast.VarDecl:
-		e := g.scope.GetEntity(x)
-		g.exprType = e.GetType()
-		if v, isVar := e.(*jasmin.Variable); isVar {
-			return jasmin.Load(v.Number, v.GetType())
-		} else {
-			return jasmin.GetStatic(e.GetFull(), e.GetType())
-		}
-	default:
-		panic(fmt.Sprintf("genIdent: unexpected obj: %+v", id.Obj))
-	}
+func (g *genContext) genIdent(id *ast.IdentExpr) instruction.I {
+	varDecl := id.Obj.(*ast.VarDecl)
+	return g.hints[varDecl]
 }
 
-func (g *genContext) genSelector(s *ast.SelectorExpr) jasmin.Sequence {
-	switch x := s.Obj.(type) {
-	case *ast.Field:
-		field := g.scope.GetEntity(x)
-		g.exprType = field.GetType()
-		return append(g.genExpr(s.X), jasmin.GetField(field.GetFull(), field.GetType()))
-	}
-	panic(fmt.Sprintf("gen selector: unexpected expr: %+v", s.Obj))
+func (g *genContext) genSelector(s *ast.SelectorExpr) instruction.S {
+	field := s.Obj.(*ast.Field)
+	return append(g.genExpr(s.X), g.hints[field])
 }
 
-func (g *genContext) genBinaryExpr(e *ast.BinaryExpr) jasmin.Sequence {
+func (g *genContext) genBinaryExpr(e *ast.BinaryExpr) instruction.S {
 	x := append(g.genExpr(e.X), g.genExpr(e.Y)...)
-	t := g.genType(e.X.GetType())
+	exprType := g.genType(e.X.GetType())
 	switch e.Op {
 	case lexer.ADD:
-		g.exprType = t
-		return append(x, jasmin.Add(t))
+		return append(x, addInstruction(exprType))
 	case lexer.SUB:
-		g.exprType = t
-		return append(x, jasmin.Sub(t))
+		return append(x, subInstruction(exprType))
 	case lexer.MUL:
-		g.exprType = t
-		return append(x, jasmin.Mul(t))
+		return append(x, mulInstruction(exprType))
 	default:
 		panic(fmt.Sprintf("unexpected binary expr op: %+v", e.Op))
 
 	}
 }
 
-func (g *genContext) genUnaryExpr(e *ast.UnaryExpr) jasmin.Sequence {
+func (g *genContext) genUnaryExpr(e *ast.UnaryExpr) instruction.S {
 	x := g.genExpr(e.X)
+	exprType := g.genType(e.GetType())
 	switch e.Op {
 	case lexer.SUB:
-		return append(x, jasmin.Neg(g.exprType))
+		return append(x, negInstruction(exprType))
 	default:
 		panic(fmt.Sprintf("unexpected unary expr op: %+v", e.Op))
 	}
 }
 
-func (g *genContext) genClassCompositeExpr(e *ast.ClassCompositeExpr) jasmin.Sequence {
-	c := g.scope.GetEntity(e.X.(*ast.IdentExpr).Obj.(*ast.TypeRef).TypeDecl).(*jasmin.Class)
-	t := jasmin.NewReferenceType(c.GetFull())
-	g.exprType = t
-	x := jasmin.NewSequence(
-		jasmin.New(t),
-		jasmin.Dup(t),
-		jasmin.InvokeSpecial(c.Constructor.GetFull(), c.Constructor.GetType()))
+func (g *genContext) genClassCompositeExpr(e *ast.ClassCompositeExpr) instruction.S {
+	class := g.classes[e.X.(*ast.IdentExpr).Obj.(*ast.TypeRef).TypeDecl]
+	t := jasmin.NewReferenceType(class.Name)
+	x := []instruction.I{
+		instruction.New(class.Name),
+		instruction.Dup(),
+		instruction.Invokespecial(class.Name + "/<init>()V"),
+	}
 	for _, vp := range e.Values {
 		f := g.scope.GetEntity(vp.Field)
 		x = append(x, jasmin.Dup(t))

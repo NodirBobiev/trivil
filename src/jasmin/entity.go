@@ -1,25 +1,27 @@
 package jasmin
 
-import "fmt"
+import (
+	"fmt"
+	"trivil/jasmin/core/tps"
+)
 
-// Entity is basically Package, Class, Method, Field and Variable
 type Entity interface {
 	GetName() string
 	GetFull() string
 	GetParent() Entity
-	GetType() Type
+	GetType() tps.T
 	GetAccessFlag() AccessFlag
 	IsStatic() bool
 	SetName(string)
 	SetParent(Entity)
-	SetType(Type)
+	SetType(tps.T)
 	SetAccessFlag(AccessFlag)
 	SetStatic(bool)
 }
 type EntityBase struct {
 	Name       string
 	Parent     Entity
-	Type       Type
+	Type       tps.T
 	AccessFlag AccessFlag
 	Static     bool
 }
@@ -36,7 +38,7 @@ func (e *EntityBase) GetFull() string {
 	}
 	return e.Name
 }
-func (e *EntityBase) GetType() Type {
+func (e *EntityBase) GetType() tps.T {
 	return e.Type
 }
 func (e *EntityBase) GetAccessFlag() AccessFlag {
@@ -51,7 +53,7 @@ func (e *EntityBase) SetName(name string) {
 func (e *EntityBase) SetParent(parent Entity) {
 	e.Parent = parent
 }
-func (e *EntityBase) SetType(t Type) {
+func (e *EntityBase) SetType(t tps.T) {
 	e.Type = t
 }
 func (e *EntityBase) SetAccessFlag(flag AccessFlag) {
@@ -59,55 +61,4 @@ func (e *EntityBase) SetAccessFlag(flag AccessFlag) {
 }
 func (e *EntityBase) SetStatic(value bool) {
 	e.Static = value
-}
-
-// EntityStorage keeps track of Package, Class, Method and Field by their full name
-type EntityStorage struct {
-	Entities map[string]Entity
-}
-
-func NewEntityStorage() *EntityStorage {
-	return &EntityStorage{Entities: map[string]Entity{}}
-}
-func (s *EntityStorage) Set(e Entity) {
-	s.Entities[e.GetFull()] = e
-}
-func (s *EntityStorage) Get(fullName string) Entity {
-	e, ok := s.Entities[fullName]
-	if !ok {
-		panic(fmt.Sprintf("entity storage get: %q doesn't exist", fullName))
-	}
-	return e
-}
-func (s *EntityStorage) GetPackage(fullName string) *Package {
-	e := s.Get(fullName)
-	c, ok := e.(*Package)
-	if !ok {
-		panic(fmt.Sprintf("entity storage get package: %q is not package but %+v", fullName, e))
-	}
-	return c
-}
-func (s *EntityStorage) GetClass(fullName string) *Class {
-	e := s.Get(fullName)
-	c, ok := e.(*Class)
-	if !ok {
-		panic(fmt.Sprintf("entity storage get class: %q is not class but %+v", fullName, e))
-	}
-	return c
-}
-func (s *EntityStorage) GetMethod(fullName string) *Method {
-	e := s.Get(fullName)
-	c, ok := e.(*Method)
-	if !ok {
-		panic(fmt.Sprintf("entity storage get method: %q is not method but %+v", fullName, e))
-	}
-	return c
-}
-func (s *EntityStorage) GetField(fullName string) *Field {
-	e := s.Get(fullName)
-	c, ok := e.(*Field)
-	if !ok {
-		panic(fmt.Sprintf("entity storage get field: %q is not field but %+v", fullName, e))
-	}
-	return c
 }

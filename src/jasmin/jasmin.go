@@ -7,15 +7,34 @@ import (
 
 // ---
 
-type Jasmin struct {
-	EntityStorage
-	Builtins map[Entity]struct{}
+// Package represents package in Jasmin/JVM
+type Package struct {
+	Name    string
+	Classes map[string]*Class
 }
 
-func (j *Jasmin) Store(f func() Entity) Entity {
-	e := f()
-	j.Set(e)
-	return e
+func NewPackage(name string) *Package {
+	pack := &Package{
+		Name:    name,
+		Classes: make(map[string]*Class),
+	}
+	mainClass := MainClass(name)
+	pack.Classes[mainClass.Name] = mainClass
+	return pack
+}
+
+func (p *Package) Show() {
+	fmt.Printf("\n===== Package: %s =====\n", p.Name)
+	for _, c := range p.Classes {
+		fmt.Printf("--- Class: %s ---\n", c.Name)
+		fmt.Println(c.String())
+	}
+}
+
+// ---
+
+type Jasmin struct {
+	Packages map[string]*Package
 }
 
 func (j *Jasmin) Save(sourceDir string) []string {
@@ -25,35 +44,17 @@ func (j *Jasmin) Save(sourceDir string) []string {
 		panic(fmt.Sprintf("jasmin save: make dir: %q", dir))
 	}
 	files := make([]string, 0)
-	for _, x := range j.Entities {
-		switch p := x.(type) {
-		//case *Package:
-		//	for _, c := range p.Entities {
-		//		cc := c.(*Class)
-		//		cc.Save(dir)
-		//	}
-		case *Class:
-			files = append(files, p.Save(dir))
+	for _, p := range j.Packages {
+		for _, c := range p.Classes {
+			files = append(files, c.Save(dir))
 		}
 	}
 	return files
 }
 
-func NewJasmin() *Jasmin {
-	return &Jasmin{
-		EntityStorage: *NewEntityStorage(),
-		Builtins:      make(map[Entity]struct{}),
-	}
-}
 func (j *Jasmin) Show() {
-	for _, x := range j.Entities {
-		switch p := x.(type) {
-		case *Package:
-			p.Show()
-		case *Class:
-			fmt.Printf("--- Class: %s ---\n", p.GetName())
-			fmt.Println(p.String())
-		}
+	for _, p := range j.Packages {
+		p.Show()
 	}
 }
 

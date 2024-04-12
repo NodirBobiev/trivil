@@ -5,61 +5,36 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"trivil/jasmin/core/instruction"
+	"trivil/jasmin/core/tps"
 )
 
 // Class represents class in Jasmin/JVM
 type Class struct {
-	EntityBase
-	EntityStorage
-	Super       *Class
-	Constructor *Method
+	Name       string
+	Directives instruction.S
+	Fields     instruction.S
+	Methods    []instruction.S
 }
 
-func NewClass(name string, parent Entity) *Class {
-	c := &Class{
-		EntityBase: EntityBase{
-			Name:       name,
-			Parent:     parent,
-			AccessFlag: Public,
-		},
-		Super:         JavaLangObjectClass(),
-		Constructor:   nil,
-		EntityStorage: *NewEntityStorage(),
-	}
-	c.Constructor = DefaultConstructor(c, JavaLangObjectClass())
-	return c
-}
-
-func (c *Class) CreateMethod(name string) *Method {
-	m := NewMethod(name, c)
-	c.Set(m)
-	return m
-}
-func (c *Class) CreateField(name string, typ Type) *Field {
-	f := NewField(name, c, typ)
-	c.Set(f)
-	return f
-}
 func (c *Class) String() string {
-	result := strings.Builder{}
-	result.WriteString(fmt.Sprintf(".class %s %s\n", c.AccessFlag, c.GetFull()))
-	result.WriteString(fmt.Sprintf(".super %s\n", c.Super.GetFull()))
-	for _, x := range c.Entities {
-		if f, isField := x.(*Field); isField {
-			result.WriteString(fmt.Sprintf("%s\n", f))
-		}
-	}
-	result.WriteString(c.Constructor.String())
-	for _, x := range c.Entities {
-		if m, isMethod := x.(*Method); isMethod {
-			result.WriteString(m.String())
-		}
-	}
 
+	result := strings.Builder{}
+	for _, i := range c.Directives {
+		result.WriteString(fmt.Sprintf("%s\n", i))
+	}
+	for _, i := range c.Fields {
+		result.WriteString(fmt.Sprintf("%s\n", i))
+	}
+	for _, seq := range c.Methods {
+		for _, i := range seq {
+			result.WriteString(fmt.Sprintf("%s\n", i))
+		}
+	}
 	return result.String()
 }
 func (c *Class) Save(dir string) string {
-	dest := filepath.Join(dir, strings.ReplaceAll(c.GetFull(), "/", "_")+".j")
+	dest := filepath.Join(dir, strings.ReplaceAll(c.Name, "/", "_")+".j")
 	file, err := os.Create(dest)
 	if err != nil {
 		panic(fmt.Sprintf("save to %q: create: %s", dest, err))
@@ -72,32 +47,25 @@ func (c *Class) Save(dir string) string {
 	return dest
 }
 
-func MainClass(methodToCall *Method) *Class {
-	class := NewClass("Main", nil)
-	method := MainMethod(class)
-	class.Set(method)
-	method.Append(Load(0, NewReferenceType("java/lang/String")))
-	method.Append(InvokeStatic(methodToCall.GetFull(), methodToCall.GetType()))
-	return class
+func MainClass(path ...string) *Class {
+	return &Class{
+		Name: strings.Join(append(path, "Main"), "/"),
+		Directives: []instruction.I{
+			instruction.Class("public", "Main"),
+			instruction.Super("java/lang/Object"),
+		},
+		Fields:  make(instruction.S, 0),
+		Methods: make([]instruction.S, 0),
+	}
 }
 
-var (
-	javaLangObjectClass *Class
-)
-
-func JavaLangObjectClass() *Class {
-	if javaLangObjectClass == nil {
-		javaLangObjectClass = &Class{
-			EntityBase: EntityBase{Name: "java/lang/Object"},
-		}
-		javaLangObjectClass.Constructor = &Method{
-			EntityBase: EntityBase{
-				Name:       "<init>",
-				Type:       VoidMethodType(),
-				AccessFlag: Public,
-				Parent:     javaLangObjectClass,
-			},
-		}
+func MainMethod(fnInvoke string) instruction.S {
+	return []instruction.I{
+		instruction.Method("public", true, "main"+tps.MainMethod.String()),
+		instruction.LimitStack(1),
+		instruction.LimitLocals(1),
+		instruction.Aload(0),
+		instruction.Invokestatic(fnInvoke),
+		instruction.EndMethod(),
 	}
-	return javaLangObjectClass
 }

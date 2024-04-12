@@ -3,14 +3,14 @@ package genjava
 import (
 	"fmt"
 	"trivil/ast"
-	"trivil/jasmin"
+	"trivil/jasmin/core/tps"
 )
 
 //func (g *genContext) isPredefinedType(t ast.Type) bool {
 //
 //}
 
-func (g *genContext) genType(t ast.Type) jasmin.Type {
+func (g *genContext) genType(t ast.Type) tps.T {
 	switch x := t.(type) {
 	case *ast.FuncType:
 		return g.genFunctionType(x)
@@ -32,7 +32,7 @@ func (g *genContext) genType(t ast.Type) jasmin.Type {
 			//	//}
 			//	//return genc.declName(tr.TypeDecl)
 		}
-		return jasmin.NewReferenceType(g.getClassName(x))
+		return tps.NewReference(g.getClassName(x))
 	//case *ast.MayBeType:
 	//	return genc.typeRef(x.Typ)
 	default:
@@ -41,18 +41,19 @@ func (g *genContext) genType(t ast.Type) jasmin.Type {
 	}
 }
 
-func (g *genContext) genFunctionType(t *ast.FuncType) jasmin.Type {
-	parametersType := jasmin.NewParametersType()
+func (g *genContext) genFunctionType(t *ast.FuncType) tps.T {
+	var (
+		parameters tps.Parameters
+		returnType tps.T = tps.Void
+	)
 	for _, p := range t.Params {
-		*parametersType = append(*parametersType, g.genType(p.GetType()))
+		parameters = append(parameters, g.genType(p.GetType()))
 	}
-	var returnType jasmin.Type
-	if t.ReturnTyp == nil {
-		returnType = jasmin.NewVoidType()
-	} else {
+
+	if t.ReturnTyp != nil {
 		returnType = g.genType(t.ReturnTyp)
 	}
-	return jasmin.NewMethodType(parametersType, returnType)
+	return tps.NewMethod(returnType, parameters...)
 }
 
 func (g *genContext) getClassName(t ast.Type) string {
@@ -64,20 +65,20 @@ func (g *genContext) getClassName(t ast.Type) string {
 	panic(fmt.Sprintf("get class name: unexpected type: %+v", t))
 }
 
-func predefinedTypeName(name string) jasmin.Type {
+func predefinedTypeName(name string) tps.T {
 	switch name {
 	//case "Байт":
 	//	return jasmin.NewPrimitiveType(jasmin.BytePrimitive)
 	case "Цел64":
-		return jasmin.NewLongType()
+		return tps.Long
 	case "Вещ64":
-		return jasmin.NewDoubleType()
+		return tps.Double
 	case "Слово64":
-		return jasmin.NewLongType()
+		return tps.Long
 	//case "Лог":
 	//	return jasmin.NewPrimitiveType(jasmin.BooleanPrimitive)
 	case "Символ":
-		return jasmin.NewIntType()
+		return tps.Int
 	//case "Строка":
 	//	return jasmin.StringType
 	//case "Строка8":

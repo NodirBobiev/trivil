@@ -5,20 +5,23 @@ import (
 	"trivil/ast"
 	"trivil/jasmin"
 	"trivil/jasmin/builtins"
+	"trivil/jasmin/core/instruction"
 )
 
 var generator *genContext
 
 type genContext struct {
-	java          *jasmin.Jasmin
-	pack          *jasmin.Package
-	packMainClass *jasmin.Class
-	class         *jasmin.Class
-	method        *jasmin.Method
-	scope         *Scope
-	exprType      jasmin.Type
-	mods          map[string]*jasmin.Method
-	labelCounter  int
+	java         *jasmin.Jasmin
+	pack         *jasmin.Package
+	class        *jasmin.Class
+	method       instruction.S
+	locals       int
+	stack        int
+	scope        *ast.Scope
+	classes      map[ast.Decl]*jasmin.Class
+	hints        map[ast.Decl]instruction.I
+	mods         map[string]*jasmin.Method
+	labelCounter int
 }
 
 func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
@@ -27,6 +30,7 @@ func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
 			java:  jasmin.NewJasmin(),
 			scope: NewScope(),
 			mods:  make(map[string]*jasmin.Method),
+			hints: map[ast.Decl]instruction.I{},
 		}
 		generator.init()
 	}
@@ -48,4 +52,19 @@ func (g *genContext) genLabel(name string) string {
 
 func (g *genContext) resetMethod() {
 	g.labelCounter = 0
+	g.stack = 0
+	g.locals = 0
+	g.method = nil
+}
+
+func (g *genContext) decl(name string) ast.Decl {
+	scope := g.scope
+	for scope != nil {
+		d, ok := scope.Names[name]
+		if ok {
+			return d
+		}
+		scope = scope.Outer
+	}
+	return nil
 }

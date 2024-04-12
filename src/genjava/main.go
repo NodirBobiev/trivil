@@ -5,21 +5,21 @@ import (
 	"trivil/ast"
 	"trivil/env"
 	"trivil/jasmin"
+	"trivil/jasmin/core/instruction"
+	"trivil/jasmin/core/tps"
 )
 
 const (
 	moduleMainClass = "MainClass"
 )
 
-func (g *genContext) getMainClass() *jasmin.Class {
-	return g.packMainClass
+func (g *genContext) mainClass() *jasmin.Class {
+	return g.pack.Classes["Main"]
 }
 
 func (g *genContext) genModule(m *ast.Module, main bool) {
-	g.pack = jasmin.NewPackage(env.OutName(m.GetName()), nil)
-	g.packMainClass = g.pack.CreateClass(moduleMainClass, nil)
-	g.java.Set(g.packMainClass)
-	g.java.Set(g.pack)
+	g.pack = jasmin.NewPackage(env.OutName(m.GetName()))
+	g.java.Packages[g.pack.Name] = g.pack
 	g.scope.SetScope(m.Inner)
 	for _, d := range m.Decls {
 		switch x := d.(type) {
@@ -28,70 +28,89 @@ func (g *genContext) genModule(m *ast.Module, main bool) {
 		case *ast.TypeDecl:
 			g.genTypeDecl(x)
 		case *ast.VarDecl:
-			f := g.getMainClass().CreateField(x.GetName(), g.genType(x.GetType()))
-			f.SetStatic(true)
-			g.java.Set(f)
-			g.scope.SetEntity(x, f)
+			g.genGlobalVarDecl(x)
 		}
 	}
 	if main && m.Entry != nil {
-		mainClass := jasmin.MainClass(g.genEntry(m.Entry))
-		g.java.Set(mainClass)
+		g.genEntry(m.Entry)
 	}
 }
 
-func (g *genContext) genTypeDecl(t *ast.TypeDecl) {
-	//var accessFlag jasmin.AccessFlag
-	//if t.Exported {
-	//	accessFlag = jasmin.Public
-	//} else {
-	//	accessFlag = jasmin.Private
-	//}
-	baseType := t.GetType().(*ast.ClassType).BaseTyp
-	var super *jasmin.Class
-	if baseType != nil {
-		e := g.scope.GetEntityByName(baseType.(*ast.TypeRef).TypeName)
-		super = e.(*jasmin.Class)
+func (g *genContext) genGlobalVarDecl(v *ast.VarDecl) {
+	var (
+		access = "protected"
+	)
+	if v.Exported {
+		access = "public"
 	}
-	g.class = g.pack.CreateClass(env.OutName(t.GetName()), super)
-	g.java.Set(g.class)
-	g.scope.SetEntity(t, g.class)
-	switch x := t.GetType().(type) {
-	case *ast.ClassType:
-		for _, f := range x.Fields {
-			g.genField(f)
-		}
-		//for _, f := range x.Methods {
-		//	g.genFunction(f)
-		//}
+	g.mainClass().Fields.Append(
+		instruction.Field(access, true, env.OutName(v.GetName()), g.genType(v.GetType())),
+	)
+}
+
+func (g *genContext) genTypeDecl(t *ast.TypeDecl) {
+	var (
+		access    = "public"
+		classDesc = g.pack.Name + "/" + env.OutName(t.GetName())
+		super     = "java/lang/Object"
+	)
+
+	baseType := t.GetType().(*ast.ClassType).BaseTyp
+	if baseType != nil {
+		d := g.decl(baseType.(*ast.TypeRef).TypeName)
+		super = g.classes[d].Name
+	}
+	g.class = &jasmin.Class{
+		Name: classDesc,
+		Directives: []instruction.I{
+			instruction.Class(access, classDesc),
+			instruction.Super(super),
+		},
+		Fields:  make(instruction.S, 0),
+		Methods: make([]instruction.S, 0),
+	}
+	g.classes[t] = g.class
+	g.pack.Classes[t.GetName()] = g.class
+
+	for _, f := range t.GetType().(*ast.ClassType).Fields {
+		g.genField(f)
 	}
 
 	g.class = nil
 }
 
 func (g *genContext) genField(f *ast.Field) {
-	var accessFlag jasmin.AccessFlag
+	var (
+		access    = "protected"
+		fieldName = env.OutName(f.GetName())
+		fieldType = g.genType(f.GetType())
+		field     = g.class.Name + "/" + fieldName
+	)
 	if f.Exported {
-		accessFlag = jasmin.Public
-	} else {
-		accessFlag = jasmin.Protected
+		access = "public"
 	}
-	ff := g.class.CreateField(env.OutName(f.GetName()), g.genType(f.GetType()))
-	ff.SetAccessFlag(accessFlag)
-	g.java.Set(ff)
-	g.scope.SetEntity(f, ff)
+	g.class.Fields.Append(
+		instruction.Field(access, false, fieldName, fieldType),
+	)
+	g.hints[f] = instruction.Getfield(field, fieldType.String())
 	// TODO: Initialize field with value
 }
 
-func (g *genContext) genEntry(f *ast.EntryFn) *jasmin.Method {
-	g.class = g.getMainClass()
-	g.method = jasmin.MainMethod(g.class)
-	g.class.Set(g.method)
-	g.java.Set(g.method)
-	g.genStatementSeq(f.Seq)
-	method := g.method
-	g.method = nil
-	return method
+func (g *genContext) genEntry(f *ast.EntryFn) {
+	g.class = g.mainClass()
+	g.genMethod(f.Seq, "public", true, "main"+tps.MainMethod.String())
+}
+
+func (g *genContext) genMethod(seq *ast.StatementSeq, access string, isStatic bool, fnNameAndType string) {
+	g.method = instruction.S{}
+	g.genStatementSeq(seq)
+	g.method.Prepend(
+		instruction.Method(access, isStatic, fnNameAndType),
+		instruction.LimitStack(g.stack),
+		instruction.LimitLocals(g.locals),
+	).Append(instruction.EndMethod())
+	g.class.Methods = append(g.class.Methods, g.method)
+	g.resetMethod()
 }
 
 func (g *genContext) genFunction(f *ast.Function) {
@@ -100,43 +119,44 @@ func (g *genContext) genFunction(f *ast.Function) {
 		return
 	}
 	var (
-		isStatic   bool
-		accessFlag jasmin.AccessFlag
+		isStatic bool
+		access   = "protected"
+		fnName   = env.OutName(f.GetName())
+		fnType   = g.genType(f.GetType())
+		fnDesc   = g.class.Name + "/" + fnName + fnType.String()
 	)
 	if f.Recv != nil {
-		g.class = g.pack.GetClass(g.getClassName(f.Recv.GetType()))
+		g.class = g.pack.Classes[g.getClassName(f.Recv.GetType())]
 	} else {
-		g.class = g.getMainClass()
+		g.class = g.mainClass()
 		isStatic = true
 	}
-	accessFlag = jasmin.Protected
 	if f.Exported {
-		accessFlag = jasmin.Public
+		access = "public"
 	}
-	g.method = jasmin.NewMethod(env.OutName(f.GetName()), g.class)
-	//g.method = g.class.CreateMethod(f.GetName())
-	g.method.SetType(g.genType(f.Typ))
-	g.method.SetAccessFlag(accessFlag)
-	g.method.SetStatic(isStatic)
-	g.class.Set(g.method)
-	g.java.Set(g.method)
-	// if the function has a receiver, then the receiver is variable this
+
+	// if the function has a receiver, then the receiver is "this" (0 as local number).
 	if f.Recv != nil {
 		varDecl := f.Seq.Inner.Names[f.Recv.GetName()]
-		this := jasmin.NewVariable(env.OutName(f.Recv.GetName()), g.method, g.genType(varDecl.GetType()), 0)
-		g.scope.SetEntity(varDecl, this)
+		g.hints[varDecl] = instruction.Aload(0)
+		g.locals++
 	}
 	// assign local var numbers to parameters
 	t := f.Typ.(*ast.FuncType)
 	for _, x := range t.Params {
 		varDecl := f.Seq.Inner.Names[x.GetName()]
-		paramVar := g.method.AssignNumber(jasmin.NewVariable(env.OutName(x.GetName()), g.method, g.genType(varDecl.GetType()), -1))
-		g.scope.SetEntity(varDecl, paramVar)
+		varType := g.genType(varDecl.GetType())
+		g.hints[varDecl] = loadInstruction(varType, g.locals)
+		g.locals += typeSize(varType)
 	}
-	g.scope.SetEntity(f, g.method)
-	g.genStatementSeq(f.Seq)
 
-	g.method = nil
+	if isStatic {
+		g.hints[f] = instruction.Invokestatic(fnDesc)
+	} else {
+		g.hints[f] = instruction.Invokevirtual(fnDesc)
+	}
+
+	g.genMethod(f.Seq, access, isStatic, fnName+fnType.String())
 }
 
 func (g *genContext) genExternalFunction(f *ast.Function) {
@@ -149,7 +169,6 @@ func (g *genContext) genExternalFunction(f *ast.Function) {
 }
 
 func (g *genContext) genStatementSeq(s *ast.StatementSeq) {
-
 	for _, i := range s.Statements {
 		g.genStatement(i)
 	}
@@ -175,16 +194,14 @@ func (g *genContext) genStatement(s ast.Statement) {
 }
 
 func (g *genContext) genLocalDecl(d ast.Decl) {
-	switch x := d.(type) {
-	case *ast.VarDecl:
-		t := g.genType(x.GetType())
-		e := g.method.AssignNumber(jasmin.NewVariable(env.OutName(x.GetName()), g.method, t, -1))
-		g.scope.SetEntity(d, e)
-		g.method.Append(g.genExpr(x.Init)...)
-		g.method.Append(jasmin.Store(e.Number, t))
-	default:
-		panic("unknown local decl")
-	}
+	varDecl := d.(*ast.VarDecl)
+	varType := g.genType(varDecl.GetType())
+	g.hints[varDecl] = loadInstruction(varType, g.locals)
+	local := g.locals
+	g.locals += typeSize(varType)
+	g.method.Append(g.genExpr(varDecl.Init)...)
+	g.method.Append(storeInstruction(varType, local))
+
 }
 
 func (g *genContext) genAssignStatement(a *ast.AssignStatement) {
@@ -196,10 +213,10 @@ func (g *genContext) genAssignStatement(a *ast.AssignStatement) {
 
 func (g *genContext) genReturn(e *ast.Return) {
 	if e.X == nil {
-		g.method.Append(jasmin.Return(jasmin.NewVoidType()))
+		g.method.Append(instruction.Return())
 	} else {
 		instructions := g.genExpr(e.X)
-		g.method.Append(append(instructions, jasmin.Return(g.genType(e.ReturnTyp)))...)
+		g.method.Append(append(instructions, returnInstruction(g.genType(e.ReturnTyp)))...)
 	}
 }
 
@@ -212,6 +229,7 @@ func (g *genContext) genIf(s *ast.If) {
 		bin, _ := i.Cond.(*ast.BinaryExpr)
 		t := g.genType(bin.X.GetType())
 		eq := negate(bin.Op)
+
 		x := append(append(g.genExpr(bin.X), g.genExpr(bin.Y)...))
 		x = append(x, jasmin.Cmp(t), jasmin.If(eq, nextLabel))
 		g.method.Append(x...)

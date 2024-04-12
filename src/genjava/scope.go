@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"trivil/ast"
 	"trivil/jasmin"
+	"trivil/jasmin/core/instruction"
 )
 
 type Scope struct {
-	Decls        map[ast.Decl]jasmin.Entity
+	Decls        map[ast.Decl]instruction.S
 	CurrentScope *ast.Scope
 }
 
 func NewScope() *Scope {
 	return &Scope{
-		Decls: map[ast.Decl]jasmin.Entity{},
+		Decls: map[ast.Decl]instruction.S{},
 	}
 }
 func (s *Scope) SetScope(scope *ast.Scope) {
