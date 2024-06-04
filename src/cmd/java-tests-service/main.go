@@ -92,6 +92,30 @@ var tests = []common.Test{
 		PackagePath: "/home/cyrus/trivil/examples/simples/рекурсия/фибоначи",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/рекурсия/фибоначи/output.txt",
 	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-пока-интервал",
+		},
+		ProgramName: "пока-интервал",
+		PackagePath: "/home/cyrus/trivil/examples/simples/пока/интервал",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/пока/интервал/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-пока-фибоначи",
+		},
+		ProgramName: "пока-фибоначи",
+		PackagePath: "/home/cyrus/trivil/examples/simples/пока/фибоначи",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/пока/фибоначи/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-прервать-стоп",
+		},
+		ProgramName: "пока-стоп",
+		PackagePath: "/home/cyrus/trivil/examples/simples/прервать/стоп",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/прервать/стоп/output.txt",
+	},
 }
 
 func runTest(t common.Test) error {

@@ -21,7 +21,7 @@ func negate(op lexer.Token) string {
 	case lexer.GEQ:
 		return "lt"
 	default:
-		panic(fmt.Sprintf("toIfIcmp doesn't support: %v lexer token", op))
+		panic(fmt.Sprintf("negate doesn't support: %v lexer token", op))
 	}
 }
 

@@ -167,8 +167,12 @@ func (g *genContext) genStatement(s ast.Statement) {
 		g.genExprStatement(x)
 	case *ast.If:
 		g.genIf(x)
+	case *ast.While:
+		g.genWhile(x)
 	case *ast.StatementSeq:
 		g.genStatementSeq(x)
+	case *ast.Break:
+		g.genBreak(x)
 	default:
 		panic(fmt.Sprintf("unexpected statements: %+v", s))
 	}
@@ -249,4 +253,33 @@ func (g *genContext) genIf(s *ast.If) {
 	if s.Else == nil {
 		nextIfLabel = ""
 	}
+}
+
+func (g *genContext) genWhile(s *ast.While) {
+	var (
+		whileStartLabel = g.genLabel("WHILE_START")
+		whileEndLabel   = g.genLabel("WHILE_END")
+	)
+	g.cyclesLabels = append(g.cyclesLabels, whileEndLabel)
+	defer func() { g.cyclesLabels = g.cyclesLabels[:len(g.cyclesLabels)-1] }()
+	g.method.Append(jasmin.NewLabel(whileStartLabel))
+
+	bin, _ := s.Cond.(*ast.BinaryExpr)
+
+	g.method.Append(g.genExpr(bin.X)...)
+	g.method.Append(g.genExpr(bin.Y)...)
+	g.method.Append(
+		jasmin.Cmp(g.genType(bin.X.GetType())),
+		jasmin.If(negate(bin.Op), whileEndLabel),
+	)
+
+	g.genStatementSeq(s.Seq)
+
+	g.method.Append(jasmin.Goto(whileStartLabel))
+
+	g.method.Append(jasmin.NewLabel(whileEndLabel))
+}
+
+func (g *genContext) genBreak(_ *ast.Break) {
+	g.method.Append(jasmin.Goto(g.cyclesLabels[len(g.cyclesLabels)-1]))
 }

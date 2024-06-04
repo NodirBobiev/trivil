@@ -19,14 +19,16 @@ type genContext struct {
 	exprType      jasmin.Type
 	mods          map[string]*jasmin.Method
 	labelCounter  int
+	cyclesLabels  []string
 }
 
 func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
 	if generator == nil {
 		generator = &genContext{
-			java:  jasmin.NewJasmin(),
-			scope: NewScope(),
-			mods:  make(map[string]*jasmin.Method),
+			java:         jasmin.NewJasmin(),
+			scope:        NewScope(),
+			mods:         make(map[string]*jasmin.Method),
+			cyclesLabels: make([]string, 0),
 		}
 		generator.init()
 	}
