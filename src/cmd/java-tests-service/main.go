@@ -30,6 +30,33 @@ var tests = []common.Test{
 	},
 	&scenarious.SimpleTest{
 		TestBase: common.TestBase{
+			Name: "простой-арифметика-сумма",
+		},
+		ProgramName: "арифметика-сумма",
+		PackagePath: "/home/cyrus/trivil/examples/simples/арифметика/сумма",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/арифметика/сумма/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/арифметика/сумма/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-арифметика-разница",
+		},
+		ProgramName: "арифметика-разница",
+		PackagePath: "/home/cyrus/trivil/examples/simples/арифметика/разница",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/арифметика/разница/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/арифметика/разница/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-арифметика-площадь",
+		},
+		ProgramName: "арифметика-площадь",
+		PackagePath: "/home/cyrus/trivil/examples/simples/арифметика/площадь",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/арифметика/площадь/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/арифметика/площадь/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
 			Name: "простой-вещ64-тест",
 		},
 		ProgramName: "вещ64-тест",

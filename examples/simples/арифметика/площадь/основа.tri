@@ -1,0 +1,12 @@
+модуль площадь
+
+импорт "/home/cyrus/trivil/examples/simples/вывод"
+импорт "/home/cyrus/trivil/examples/simples/ввод"
+импорт "/home/cyrus/trivil/examples/simples/арифметика"
+
+вход{
+    пусть длина := ввод.вещ64()
+    пусть ширина := ввод.вещ64()
+
+    вывод.вещ64(арифметика.площадь(длина, ширина))
+}
