@@ -12,7 +12,10 @@ if [ ! -d "$directory_path" ]; then
     exit 2
 fi
 
-/home/cyrus/trivil/src/trivil -out "$directory_path/generated" "$directory_path" \
+
+cd "/home/cyrus/trivil/src" \
+&&
+./trivil -out "$directory_path/generated" "$directory_path" \
 && \
 cd "$directory_path/generated" \
 && \

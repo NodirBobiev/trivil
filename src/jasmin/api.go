@@ -94,3 +94,6 @@ func VoidMethodType() Type {
 func UnaryVoidMethodType(parameterType Type) Type {
 	return NewMethodType(NewParametersType(parameterType), NewVoidType())
 }
+func NullaryMethodType(returnType Type) Type {
+	return NewMethodType(NewParametersType(), returnType)
+}

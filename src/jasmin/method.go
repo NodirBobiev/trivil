@@ -16,7 +16,7 @@ type Method struct {
 	curStack     int
 }
 
-func NewMethod(name string, class *Class) *Method {
+func NewMethod(name string, class Entity) *Method {
 	return &Method{
 		EntityBase: EntityBase{
 			Name:       name,
@@ -88,8 +88,8 @@ func (m *Method) GetFull() string {
 	return m.EntityBase.GetFull() + m.Type.String()
 }
 
-func NewFullMethod(name string, isStatic bool, flag AccessFlag, t Type, class *Class) *Method {
-	m := class.CreateMethod(name)
+func NewFullMethod(name string, isStatic bool, flag AccessFlag, t Type) *Method {
+	m := NewMethod(name, nil)
 	m.SetStatic(isStatic)
 	m.SetAccessFlag(flag)
 	m.SetType(t)
@@ -113,4 +113,16 @@ func MainMethod(class *Class) *Method {
 	m.Locals = 1
 	m.SetAccessFlag(Public)
 	return m
+}
+
+func NewVoidPublicStaticMethod(name string, paramType Type) *Method {
+	return NewFullMethod(name, true, Public, UnaryVoidMethodType(paramType))
+}
+
+func NewNullaryPublicStaticMethod(name string, returnType Type) *Method {
+	return NewFullMethod(name, true, Public, NullaryMethodType(returnType))
+}
+
+func NewPublicStaticMethod(name string, t Type) *Method {
+	return NewFullMethod(name, true, Public, t)
 }

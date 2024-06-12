@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"trivil/ast"
 	"trivil/jasmin"
-	"trivil/jasmin/builtins"
 )
 
 var generator *genContext
@@ -30,17 +29,22 @@ func Generate(m *ast.Module, main bool) *jasmin.Jasmin {
 			mods:         make(map[string]*jasmin.Method),
 			cyclesLabels: make([]string, 0),
 		}
-		generator.init()
+		generator.initMods()
 	}
 	generator.genModule(m, main)
 	return generator.java
 }
 
-func (g *genContext) init() {
-	g.mods["print_int64"] = builtins.PrintLongMethod()
-	g.mods["print_float64"] = builtins.PrintDoubleMethod()
-	g.mods["println"] = builtins.PrintlnMethod()
-	g.java.Set(builtins.PrintClass())
+func (g *genContext) initMods() {
+	g.mods["print_int64"] = jasmin.NewVoidPublicStaticMethod("builtins/Print/print_int64", jasmin.NewLongType())
+	g.mods["print_float64"] = jasmin.NewVoidPublicStaticMethod("builtins/Print/print_float64", jasmin.NewDoubleType())
+	g.mods["print_string"] = jasmin.NewVoidPublicStaticMethod("builtins/Print/print_string", jasmin.NewStringType())
+	g.mods["println"] = jasmin.NewPublicStaticMethod("builtins/Print/println", jasmin.VoidMethodType())
+
+	g.mods["scan_int64"] = jasmin.NewNullaryPublicStaticMethod("builtins/Scan/scan_int64", jasmin.NewLongType())
+	g.mods["scan_float64"] = jasmin.NewNullaryPublicStaticMethod("builtins/Scan/scan_float64", jasmin.NewDoubleType())
+	g.mods["scan_string"] = jasmin.NewNullaryPublicStaticMethod("builtins/Scan/scan_string", jasmin.NewStringType())
+	g.mods["scanln"] = jasmin.NewNullaryPublicStaticMethod("builtins/Scan/scanln", jasmin.NewStringType())
 }
 
 func (g *genContext) genLabel(name string) string {

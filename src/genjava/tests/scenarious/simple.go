@@ -2,6 +2,7 @@ package scenarious
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"go.uber.org/zap"
@@ -25,6 +26,7 @@ type SimpleTest struct {
 	ProgramName string
 	PackagePath string
 	OutputPath  string
+	InputPath   string
 }
 
 func (t *SimpleTest) Run() error {
@@ -32,7 +34,7 @@ func (t *SimpleTest) Run() error {
 	genDir := fmt.Sprintf("/tmp/trivil-outputs/%s-%s", t.ProgramName, time.Now().Format("20060102150405"))
 
 	// run trivil to generate jasmin files
-	_, err := runAndCheck("trivil", exec.Command(trivilPath, "-out", genDir, t.PackagePath))
+	_, err := runAndCheck("trivil", exec.Command(trivilPath, "-out", genDir, t.PackagePath), nil)
 	if err != nil {
 		return err
 	}
@@ -47,15 +49,20 @@ func (t *SimpleTest) Run() error {
 	// run jasmin to generate java class files
 	args := append([]string{"-jar", jasminPath, "-d", genDir}, jasminFiles...)
 	cmd := exec.Command(javaPath, args...)
-	_, err = runAndCheck("jasmin", cmd)
+	_, err = runAndCheck("jasmin", cmd, nil)
 
 	if err != nil {
 		return err
 	}
 
+	inputReader, err := getInputReader(t.InputPath)
+	if err != nil {
+		return fmt.Errorf("opening input file: %s", err)
+	}
+
 	cmd = exec.Command(javaPath, "Main", "*")
 	cmd.Dir = genDir
-	stdout, err := runAndCheck("java", cmd)
+	stdout, err := runAndCheck("java", cmd, inputReader)
 	if err != nil {
 		return err
 	}
@@ -72,8 +79,8 @@ func readAndCheckResults(filePath string, actualResult string) error {
 	return nil
 }
 
-func runAndCheck(name string, cmd *exec.Cmd) (string, error) {
-	stderr, stdout, err := runCommand(cmd)
+func runAndCheck(name string, cmd *exec.Cmd, stdin io.Reader) (string, error) {
+	stderr, stdout, err := runCommand(cmd, stdin)
 	if err != nil {
 		return stdout, fmt.Errorf("%s error: %s", name, err)
 	}
@@ -83,7 +90,7 @@ func runAndCheck(name string, cmd *exec.Cmd) (string, error) {
 	return stdout, nil
 }
 
-func runCommand(cmd *exec.Cmd) (stderr, stdout string, err error) {
+func runCommand(cmd *exec.Cmd, stdin io.Reader) (stderr, stdout string, err error) {
 	zap.S().Infow("running cli command", "cmd", cmd.String())
 	var (
 		stdoutPipe    io.ReadCloser
@@ -95,6 +102,10 @@ func runCommand(cmd *exec.Cmd) (stderr, stdout string, err error) {
 
 	stdoutPipe, _ = cmd.StdoutPipe()
 	stderrPipe, _ = cmd.StderrPipe()
+
+	if stdin != nil {
+		cmd.Stdin = stdin
+	}
 
 	stdoutScanner = bufio.NewScanner(stdoutPipe)
 	stdoutScanner.Split(bufio.ScanBytes)
@@ -135,4 +146,15 @@ func getJasminFiles(dir string) ([]string, error) {
 		files = append(files, filepath.Join(dir, d.Name()))
 	}
 	return files, nil
+}
+
+func getInputReader(inputPath string) (io.Reader, error) {
+	if inputPath != "" {
+		inputFile, err := os.Open(inputPath)
+		if err != nil {
+			return nil, fmt.Errorf("opening input file: %s", err)
+		}
+		return inputFile, nil
+	}
+	return bytes.NewReader([]byte{}), nil
 }

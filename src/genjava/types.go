@@ -78,8 +78,8 @@ func predefinedTypeName(name string) jasmin.Type {
 	//	return jasmin.NewPrimitiveType(jasmin.BooleanPrimitive)
 	case "Символ":
 		return jasmin.NewIntType()
-	//case "Строка":
-	//	return jasmin.StringType
+	case "Строка":
+		return jasmin.NewStringType()
 	//case "Строка8":
 	//	return jasmin.StringType
 	//case "Пусто":

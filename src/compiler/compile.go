@@ -2,6 +2,9 @@ package compiler
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"path"
 	"trivil/ast"
 	"trivil/env"
 	"trivil/genjava"
@@ -68,8 +71,10 @@ func (cc *compileContext) build() {
 		gen = cc.process(m)
 	}
 	if gen != nil {
-		if *env.GenOut != "" {
-			files := gen.Save(*env.GenOut)
+		destDir := *env.GenOut
+		if destDir != "" {
+			copyBuiltins(destDir)
+			files := gen.Save(destDir)
 			fmt.Printf("Generated: %d files\n", len(files))
 			for _, f := range files {
 				fmt.Printf("[%s]\n", f)
@@ -142,4 +147,44 @@ func (cc *compileContext) traverse(m *ast.Module, pos int) {
 
 	cc.status[m] = processed
 	cc.list = append(cc.list, m)
+}
+
+//=== copy builtins
+
+func copyFile(src, dst string) {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		panic("copyFile: src Open: " + err.Error())
+	}
+	defer sourceFile.Close()
+
+	destinationFile, err := os.Create(dst)
+	if err != nil {
+		panic("copyFile: dst Open: " + err.Error())
+	}
+	defer destinationFile.Close()
+
+	_, err = io.Copy(destinationFile, sourceFile)
+	if err != nil {
+		panic("copyFile: io Copy: " + err.Error())
+	}
+	err = destinationFile.Sync()
+	if err != nil {
+		panic("copyFile: dst file Sync: " + err.Error())
+	}
+}
+
+func copyBuiltins(destDir string) {
+	err := os.MkdirAll(destDir, 0755)
+	if err != nil {
+		panic(fmt.Sprintf("copy builtins: make dir: %q", destDir))
+	}
+	sourceDir := "jasmin_runtime"
+	filesToCopy := []string{
+		"builtins_Print.j",
+		"builtins_Scan.j",
+	}
+	for _, f := range filesToCopy {
+		copyFile(path.Join(sourceDir, f), path.Join(destDir, f))
+	}
 }

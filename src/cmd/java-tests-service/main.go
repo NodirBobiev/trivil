@@ -110,11 +110,37 @@ var tests = []common.Test{
 	},
 	&scenarious.SimpleTest{
 		TestBase: common.TestBase{
+			Name: "простой-наследование",
+		},
+		ProgramName: "наследование",
+		PackagePath: "/home/cyrus/trivil/examples/simples/наследование",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/наследование/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
 			Name: "простой-прервать-стоп",
 		},
-		ProgramName: "пока-стоп",
+		ProgramName: "прервать-стоп",
 		PackagePath: "/home/cyrus/trivil/examples/simples/прервать/стоп",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/прервать/стоп/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-эхо-цел64",
+		},
+		ProgramName: "эхо-цел64",
+		PackagePath: "/home/cyrus/trivil/examples/simples/эхо/цел64",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/эхо/цел64/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/эхо/цел64/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-эхо-вещ64",
+		},
+		ProgramName: "эхо-вещ64",
+		PackagePath: "/home/cyrus/trivil/examples/simples/эхо/вещ64",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/эхо/вещ64/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/эхо/вещ64/input.txt",
 	},
 }
 

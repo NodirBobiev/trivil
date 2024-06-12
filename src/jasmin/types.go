@@ -114,6 +114,10 @@ func NewReferenceType(class string) *ReferenceType {
 	}
 }
 
+func NewStringType() *ReferenceType {
+	return NewReferenceType("java/lang/String")
+}
+
 // Array Type
 
 type ArrayType struct {

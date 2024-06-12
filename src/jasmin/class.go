@@ -76,7 +76,8 @@ func MainClass(methodToCall *Method) *Class {
 	class := NewClass("Main", nil)
 	method := MainMethod(class)
 	class.Set(method)
-	method.Append(Load(0, NewReferenceType("java/lang/String")))
+	method.Append(InvokeStatic("builtins/Scan/initScanner()V", VoidMethodType()))
+	method.Append(Load(0, NewStringType()))
 	method.Append(InvokeStatic(methodToCall.GetFull(), methodToCall.GetType()))
 	return class
 }
