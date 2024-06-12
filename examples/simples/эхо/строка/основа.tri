@@ -1,4 +1,4 @@
-модуль цел64
+модуль строка
 
 импорт "/home/cyrus/trivil/examples/simples/ввод"
 импорт "/home/cyrus/trivil/examples/simples/вывод"

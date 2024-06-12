@@ -1,4 +1,4 @@
-модуль цел64
+модуль вещ64
 
 импорт "/home/cyrus/trivil/examples/simples/ввод"
 импорт "/home/cyrus/trivil/examples/simples/вывод"

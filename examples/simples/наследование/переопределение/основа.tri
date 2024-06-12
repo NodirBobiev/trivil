@@ -1,4 +1,4 @@
-модуль тест
+модуль наследование-переопределение
 
 импорт "/home/cyrus/trivil/examples/simples/вывод"
 
@@ -11,6 +11,9 @@
 
 
 тип Derived = класс(Base) {}
+фн (б: Derived) Вывод() {
+    вывод.строка("*** From derived class ****")
+}
 
 вход{
     пусть б: Base = Derived{}

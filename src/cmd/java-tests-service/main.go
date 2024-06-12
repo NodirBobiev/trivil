@@ -110,11 +110,19 @@ var tests = []common.Test{
 	},
 	&scenarious.SimpleTest{
 		TestBase: common.TestBase{
-			Name: "простой-наследование",
+			Name: "простой-наследование-вызов-метода",
 		},
-		ProgramName: "наследование",
-		PackagePath: "/home/cyrus/trivil/examples/simples/наследование",
-		OutputPath:  "/home/cyrus/trivil/examples/simples/наследование/output.txt",
+		ProgramName: "наследование-вызов-метода",
+		PackagePath: "/home/cyrus/trivil/examples/simples/наследование/вызов-метода",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/наследование/вызов-метода/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-наследование-вызов-метода-переопределение",
+		},
+		ProgramName: "наследование-вызов-метода-переопределение",
+		PackagePath: "/home/cyrus/trivil/examples/simples/наследование/переопределение",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/наследование/переопределение/output.txt",
 	},
 	&scenarious.SimpleTest{
 		TestBase: common.TestBase{

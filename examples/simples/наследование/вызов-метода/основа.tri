@@ -1,0 +1,19 @@
+модуль вызов-метода
+
+импорт "/home/cyrus/trivil/examples/simples/вывод"
+
+
+тип Base = класс{
+}
+фн (а: Base) Вывод() {
+    вывод.строка("From base class")
+}
+
+
+тип Derived = класс(Base) {}
+
+вход{
+    пусть б: Base = Derived{}
+    б.Вывод()
+    вывод.кс()
+}
