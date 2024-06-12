@@ -142,6 +142,33 @@ var tests = []common.Test{
 		OutputPath:  "/home/cyrus/trivil/examples/simples/эхо/вещ64/output.txt",
 		InputPath:   "/home/cyrus/trivil/examples/simples/эхо/вещ64/input.txt",
 	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-эхо-строка",
+		},
+		ProgramName: "эхо-строка",
+		PackagePath: "/home/cyrus/trivil/examples/simples/эхо/строка",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/эхо/строка/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/эхо/строка/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-эхо-линия",
+		},
+		ProgramName: "эхо-линия",
+		PackagePath: "/home/cyrus/trivil/examples/simples/эхо/линия",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/эхо/линия/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/эхо/линия/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-эхо-текст",
+		},
+		ProgramName: "эхо-текст",
+		PackagePath: "/home/cyrus/trivil/examples/simples/эхо/текст",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/эхо/текст/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/эхо/текст/input.txt",
+	},
 }
 
 func runTest(t common.Test) error {

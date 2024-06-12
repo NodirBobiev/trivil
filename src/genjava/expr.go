@@ -47,10 +47,13 @@ func (g *genContext) genLiteral(li *ast.LiteralExpr) jasmin.Instruction {
 		g.exprType = jasmin.NewIntType()
 		return jasmin.Const(li.WordVal, jasmin.NewIntType())
 		//return fmt.Sprintf("0x%X", li.WordVal)
-	//case ast.Lit_String:
-	//	//return genc.genStringLiteral(li)
+	case ast.Lit_String:
+		outs := string(li.StrVal) //genc.EncodeLiteralString(li.StrVal)
+		g.exprType = jasmin.NewStringType()
+		return jasmin.Const(fmt.Sprintf("%q", outs), g.exprType)
+		//return genc.genStringLiteral(li)
 	default:
-		panic("ni")
+		panic(fmt.Sprintf("unexpected literal:%v", li.Kind))
 	}
 }
 func (g *genContext) genIdent(id *ast.IdentExpr) jasmin.Instruction {

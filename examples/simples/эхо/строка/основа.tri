@@ -1,0 +1,8 @@
+модуль цел64
+
+импорт "/home/cyrus/trivil/examples/simples/ввод"
+импорт "/home/cyrus/trivil/examples/simples/вывод"
+
+вход{
+    вывод.строка(ввод.строка())
+}

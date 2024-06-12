@@ -60,6 +60,8 @@ func (c *ConstInstruction) String() string {
 		return fmt.Sprintf("ldc2_w %v", c.Value)
 	case *DoubleType:
 		return fmt.Sprintf("ldc2_w %v", c.Value)
+	case *ReferenceType:
+		return fmt.Sprintf("ldc %v", c.Value)
 	default:
 		panic(fmt.Sprintf("unexpected type: %+v", c.Type))
 	}
