@@ -137,6 +137,15 @@ var tests = []common.Test{
 	},
 	&scenarious.SimpleTest{
 		TestBase: common.TestBase{
+			Name: "простой-пока-н-й-фибоначи",
+		},
+		ProgramName: "пока-н-й-фибоначи",
+		PackagePath: "/home/cyrus/trivil/examples/simples/пока/н-й-фибоначи",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/пока/н-й-фибоначи/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/пока/н-й-фибоначи/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
 			Name: "простой-наследование-вызов-метода",
 		},
 		ProgramName: "наследование-вызов-метода",

@@ -25,6 +25,8 @@ func (g *genContext) genType(t ast.Type) jasmin.Type {
 		//	return g.genType(y.Typ)
 		case *ast.PredefinedType:
 			return predefinedTypeName(y.Name)
+		case *ast.VectorType:
+			return jasmin.NewArrayType(g.genType(y.ElementTyp))
 			//default:
 			//	panic(fmt.Sprintf("typeref unknown type: %+v", x))
 			//	//if g.genTypes {

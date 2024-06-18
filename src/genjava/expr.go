@@ -23,7 +23,8 @@ func (g *genContext) genExpr(expr ast.Expr) jasmin.Sequence {
 		return g.genCallExpr(x)
 	case *ast.UnaryExpr:
 		return g.genUnaryExpr(x)
-
+	case *ast.GeneralBracketExpr:
+		return g.genGeneralBracketExpr(x)
 	default:
 		panic(fmt.Sprintf("unknown ast expr: %+v", expr))
 	}
@@ -173,4 +174,16 @@ func (g *genContext) genAssignExprLeft(e ast.Expr) (jasmin.Sequence, jasmin.Inst
 		return g.genExpr(x.X), jasmin.PutField(f.GetFull(), f.GetType())
 	}
 	panic(fmt.Sprintf("genAssignExprLeft: unexpeced expr: %+v", e))
+}
+
+func (g *genContext) genGeneralBracketExpr(e *ast.GeneralBracketExpr) jasmin.Sequence {
+	if e.Index != nil {
+		return jasmin.NewSequence()
+	}
+	return g.genArrayCompositeExpr(e.Composite)
+}
+
+func (g *genContext) genArrayCompositeExpr(e *ast.ArrayCompositeExpr) jasmin.Sequence {
+
+	return jasmin.NewSequence()
 }

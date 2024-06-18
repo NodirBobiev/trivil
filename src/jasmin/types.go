@@ -122,13 +122,13 @@ func NewStringType() *ReferenceType {
 
 type ArrayType struct {
 	TypeBase
-	Type Type
+	ElementType Type
 }
 
-func NewArrayType(t Type) *ArrayType {
+func NewArrayType(elementType Type) *ArrayType {
 	return &ArrayType{
-		TypeBase: NewTypeBase(fmt.Sprintf("[%s", t), 1),
-		Type:     t,
+		TypeBase:    NewTypeBase(fmt.Sprintf("[%s", elementType), 1),
+		ElementType: elementType,
 	}
 }
 

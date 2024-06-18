@@ -40,35 +40,6 @@ func (g *genContext) genModule(m *ast.Module, main bool) {
 	}
 }
 
-func (g *genContext) genTypeDecl(t *ast.TypeDecl) {
-	//var accessFlag jasmin.AccessFlag
-	//if t.Exported {
-	//	accessFlag = jasmin.Public
-	//} else {
-	//	accessFlag = jasmin.Private
-	//}
-	baseType := t.GetType().(*ast.ClassType).BaseTyp
-	var super *jasmin.Class
-	if baseType != nil {
-		e := g.scope.GetEntityByName(baseType.(*ast.TypeRef).TypeName)
-		super = e.(*jasmin.Class)
-	}
-	g.class = g.pack.CreateClass(env.OutName(t.GetName()), super)
-	g.java.Set(g.class)
-	g.scope.SetEntity(t, g.class)
-	switch x := t.GetType().(type) {
-	case *ast.ClassType:
-		for _, f := range x.Fields {
-			g.genField(f)
-		}
-		//for _, f := range x.Methods {
-		//	g.genFunction(f)
-		//}
-	}
-
-	g.class = nil
-}
-
 func (g *genContext) genField(f *ast.Field) {
 	var accessFlag jasmin.AccessFlag
 	if f.Exported {
