@@ -55,16 +55,17 @@ func NewConstInstruction(t Type, v any) *ConstInstruction {
 func (c *ConstInstruction) String() string {
 	switch c.Type.(type) {
 	case *IntType:
-		if v, ok := c.Value.(int64); ok && v >= 0 && v <= 5 {
-			return fmt.Sprintf("iconst_%v", c.Value)
-		} else if v, ok := c.Value.(int); ok && v >= 0 && v <= 5 {
-			return fmt.Sprintf("iconst_%v", c.Value)
-		} else if v, ok := c.Value.(int64); ok && v == -1 {
-			return "iconst_m1"
-		} else if v, ok := c.Value.(int); ok && v == -1 {
-			return "iconst_m1"
-		}
-		return fmt.Sprintf("iconst %v", c.Value)
+		//if v, ok := c.Value.(int64); ok && v >= 0 && v <= 5 {
+		//	return fmt.Sprintf("iconst_%v", c.Value)
+		//} else if v, ok := c.Value.(int); ok && v >= 0 && v <= 5 {
+		//	return fmt.Sprintf("iconst_%v", c.Value)
+		//} else if v, ok := c.Value.(int64); ok && v == -1 {
+		//	return "iconst_m1"
+		//} else if v, ok := c.Value.(int); ok && v == -1 {
+		//	return "iconst_m1"
+		//}
+		//return fmt.Sprintf("iconst %v", c.Value)
+		return fmt.Sprintf("ldc %v", c.Value)
 	case *LongType:
 		return fmt.Sprintf("ldc2_w %v", c.Value)
 	case *DoubleType:

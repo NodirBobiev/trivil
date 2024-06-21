@@ -216,7 +216,7 @@ func (g *genContext) genArrayCompositeExpr(e *ast.ArrayCompositeExpr) jasmin.Seq
 
 	if e.Default != nil {
 		defaultType := g.genType(e.Default.GetType())
-		defaultLocalNumber := g.method.GetLocalNumber(defaultType)
+		defaultLocalNumber := g.method.AllocateNumber(defaultType)
 		defaultExpr := append(g.genExpr(e.Default), jasmin.Store(defaultLocalNumber, defaultType))
 		result = append(result, defaultExpr...)
 		result = append(result, g.genArrayFiller(defaultLocalNumber, arrayType)...)
@@ -248,7 +248,7 @@ func (g *genContext) genArrayCompositeExpr(e *ast.ArrayCompositeExpr) jasmin.Seq
 }
 
 func (g *genContext) genSimpleLocalVariable(value any, typ jasmin.Type) (jasmin.Sequence, int) {
-	localNumber := g.method.GetLocalNumber(typ)
+	localNumber := g.method.AllocateNumber(typ)
 	return jasmin.NewSequence(
 			jasmin.Const(value, typ),
 			jasmin.Store(localNumber, typ)),

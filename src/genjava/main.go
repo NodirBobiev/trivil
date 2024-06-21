@@ -144,6 +144,8 @@ func (g *genContext) genStatement(s ast.Statement) {
 		g.genStatementSeq(x)
 	case *ast.Break:
 		g.genBreak(x)
+	case *ast.Cycle:
+		g.genCycle(x)
 	default:
 		panic(fmt.Sprintf("unexpected statements: %+v", s))
 	}
@@ -253,4 +255,61 @@ func (g *genContext) genWhile(s *ast.While) {
 
 func (g *genContext) genBreak(_ *ast.Break) {
 	g.method.Append(jasmin.Goto(g.cyclesLabels[len(g.cyclesLabels)-1]))
+}
+
+func (g *genContext) genCycle(s *ast.Cycle) {
+	var (
+		startLabel = g.genLabel("FOR_START")
+		endLabel   = g.genLabel("FOR_END")
+	)
+	arrayType := g.genType(s.Expr.GetType()).(*jasmin.ArrayType)
+	arrayVar := g.method.AllocateNumber(arrayType)
+	indexType := jasmin.NewIntType()
+	indexVar := g.method.AllocateNumber(indexType)
+
+	// compute array expression and store it in arrayVar
+	g.method.Append(g.genExpr(s.Expr)...)
+	g.method.Append(jasmin.Store(arrayVar, arrayType))
+
+	// initialize index with 0 and store in indexVar
+	g.method.Append(
+		jasmin.Const(0, indexType),
+		jasmin.Store(indexVar, indexType))
+
+	// start loop, jump to endlabel if index is greater or equal to the length of the array
+	g.method.Append(
+		jasmin.NewLabel(startLabel),
+		jasmin.Load(indexVar, indexType),
+		jasmin.Load(arrayVar, arrayType),
+		jasmin.ArrayLength(),
+		jasmin.IfIcmp("ge", endLabel))
+
+	// if cycle has index variable, update its value
+	if s.IndexVar != nil {
+		cycleIndexType := g.genType(s.IndexVar.GetType())
+		e := g.method.AssignNumber(jasmin.NewVariable(env.OutName(s.IndexVar.GetName()), g.method, cycleIndexType, -1))
+		g.scope.SetEntity(s.IndexVar, e)
+		g.method.Append(
+			jasmin.Load(indexVar, indexType),
+			jasmin.CastPrimitives(indexType, cycleIndexType),
+			jasmin.Store(e.Number, e.Type))
+	}
+	// if cycle has element variable, update it with the current element pointed by index
+	if s.ElementVar != nil {
+		cycleElementType := g.genType(s.ElementVar.GetType())
+		e := g.method.AssignNumber(jasmin.NewVariable(env.OutName(s.ElementVar.GetName()), g.method, cycleElementType, -1))
+		g.scope.SetEntity(s.ElementVar, e)
+		g.method.Append(
+			jasmin.Load(arrayVar, arrayType),
+			jasmin.Load(indexVar, indexType),
+			jasmin.Aload(arrayType.ElementType),
+			jasmin.Store(e.Number, e.Type))
+	}
+	g.genStatementSeq(s.Seq)
+
+	// increase index, go to start label and end the loop
+	g.method.Append(
+		jasmin.Iinc(indexVar, 1),
+		jasmin.Goto(startLabel),
+		jasmin.NewLabel(endLabel))
 }

@@ -47,7 +47,7 @@ func (m *Method) AssignNumber(v *Variable) *Variable {
 	m.Locals += v.GetType().StackSlot()
 	return v
 }
-func (m *Method) GetLocalNumber(t Type) int {
+func (m *Method) AllocateNumber(t Type) int {
 	v := m.Locals
 	m.Locals += t.StackSlot()
 	return v

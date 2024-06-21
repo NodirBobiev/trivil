@@ -270,6 +270,46 @@ var tests = []common.Test{
 		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/полиморфизм",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/полиморфизм/output.txt",
 	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-цикл-по-значению",
+		},
+		ProgramName: "по-значению",
+		PackagePath: "/home/cyrus/trivil/examples/simples/цикл/по-значению",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/цикл/по-значению/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-цикл-по-индексу",
+		},
+		ProgramName: "по-индексу",
+		PackagePath: "/home/cyrus/trivil/examples/simples/цикл/по-индексу",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/цикл/по-индексу/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-цикл-по-индексу-и-значению",
+		},
+		ProgramName: "по-индексу-и-значению",
+		PackagePath: "/home/cyrus/trivil/examples/simples/цикл/по-индексу-и-значению",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/цикл/по-индексу-и-значению/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-цикл-полиморфизм",
+		},
+		ProgramName: "полиморфизм",
+		PackagePath: "/home/cyrus/trivil/examples/simples/цикл/полиморфизм",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/цикл/полиморфизм/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-цикл-пустой-вектор",
+		},
+		ProgramName: "пустой-вектор",
+		PackagePath: "/home/cyrus/trivil/examples/simples/цикл/пустой-вектор",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/цикл/пустой-вектор/output.txt",
+	},
 }
 
 func runTest(t common.Test) error {
