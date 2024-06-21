@@ -217,7 +217,7 @@ var tests = []common.Test{
 		TestBase: common.TestBase{
 			Name: "простой-вектор-без-длина-конструктор",
 		},
-		ProgramName: "без-длина-конструктор",
+		ProgramName: "вектор-без-длина-конструктор",
 		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/без-длина-конструктор",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/без-длина-конструктор/output.txt",
 	},
@@ -225,7 +225,7 @@ var tests = []common.Test{
 		TestBase: common.TestBase{
 			Name: "простой-вектор-длина-индекс-конструктор",
 		},
-		ProgramName: "длина-индекс-конструктор",
+		ProgramName: "вектор-длина-индекс-конструктор",
 		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/длина-индекс-конструктор",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/длина-индекс-конструктор/output.txt",
 	},
@@ -233,7 +233,7 @@ var tests = []common.Test{
 		TestBase: common.TestBase{
 			Name: "простой-вектор-длина-конструктор",
 		},
-		ProgramName: "длина-конструктор",
+		ProgramName: "вектор-длина-конструктор",
 		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/длина-конструктор",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/длина-конструктор/output.txt",
 	},
@@ -241,7 +241,7 @@ var tests = []common.Test{
 		TestBase: common.TestBase{
 			Name: "простой-вектор-длина-ноль",
 		},
-		ProgramName: "длина-ноль",
+		ProgramName: "вектор-длина-ноль",
 		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/длина-ноль",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/длина-ноль/output.txt",
 	},
@@ -249,7 +249,7 @@ var tests = []common.Test{
 		TestBase: common.TestBase{
 			Name: "простой-вектор-индекс-значение",
 		},
-		ProgramName: "индекс-значение",
+		ProgramName: "вектор-индекс-значение",
 		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/индекс-значение",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/индекс-значение/output.txt",
 	},
@@ -257,10 +257,18 @@ var tests = []common.Test{
 		TestBase: common.TestBase{
 			Name: "простой-вектор-перевернуть",
 		},
-		ProgramName: "перевернуть",
+		ProgramName: "вектор-перевернуть",
 		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/перевернуть",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/перевернуть/output.txt",
 		InputPath:   "/home/cyrus/trivil/examples/simples/вектор/перевернуть/input.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-вектор-полиморфизм",
+		},
+		ProgramName: "вектор-полиморфизм",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/полиморфизм",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/полиморфизм/output.txt",
 	},
 }
 
