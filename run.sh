@@ -19,7 +19,7 @@ cd "/home/cyrus/trivil/src" \
 && \
 cd "$directory_path/generated" \
 && \
-/usr/bin/java -jar /home/cyrus/Downloads/jasmin-2.4/jasmin.jar *.j \
+/usr/bin/java -jar /home/cyrus/trivil/jasmin-2.4/jasmin.jar *.j \
 && \
 echo -e "\n==================== OUTPUT ======================" \
 && \

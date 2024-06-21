@@ -213,6 +213,55 @@ var tests = []common.Test{
 		OutputPath:  "/home/cyrus/trivil/examples/simples/эхо/текст/output.txt",
 		InputPath:   "/home/cyrus/trivil/examples/simples/эхо/текст/input.txt",
 	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-вектор-без-длина-конструктор",
+		},
+		ProgramName: "без-длина-конструктор",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/без-длина-конструктор",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/без-длина-конструктор/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-вектор-длина-индекс-конструктор",
+		},
+		ProgramName: "длина-индекс-конструктор",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/длина-индекс-конструктор",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/длина-индекс-конструктор/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-вектор-длина-конструктор",
+		},
+		ProgramName: "длина-конструктор",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/длина-конструктор",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/длина-конструктор/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-вектор-длина-ноль",
+		},
+		ProgramName: "длина-ноль",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/длина-ноль",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/длина-ноль/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-вектор-индекс-значение",
+		},
+		ProgramName: "индекс-значение",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/индекс-значение",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/индекс-значение/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-вектор-перевернуть",
+		},
+		ProgramName: "перевернуть",
+		PackagePath: "/home/cyrus/trivil/examples/simples/вектор/перевернуть",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/вектор/перевернуть/output.txt",
+		InputPath:   "/home/cyrus/trivil/examples/simples/вектор/перевернуть/input.txt",
+	},
 }
 
 func runTest(t common.Test) error {

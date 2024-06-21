@@ -172,18 +172,120 @@ func (g *genContext) genAssignExprLeft(e ast.Expr) (jasmin.Sequence, jasmin.Inst
 	case *ast.SelectorExpr:
 		f := g.scope.GetEntity(x.Obj.(*ast.Field))
 		return g.genExpr(x.X), jasmin.PutField(f.GetFull(), f.GetType())
+	case *ast.GeneralBracketExpr:
+		arrayType := g.genType(x.X.GetType()).(*jasmin.ArrayType)
+		indexType := g.genType(x.Index.GetType())
+		return append(append(g.genExpr(x.X), g.genExpr(x.Index)...),
+				jasmin.CastPrimitives(indexType, jasmin.NewIntType())),
+			jasmin.Astore(arrayType.ElementType)
 	}
+
 	panic(fmt.Sprintf("genAssignExprLeft: unexpeced expr: %+v", e))
 }
 
 func (g *genContext) genGeneralBracketExpr(e *ast.GeneralBracketExpr) jasmin.Sequence {
 	if e.Index != nil {
-		return jasmin.NewSequence()
+		arrayType := g.genType(e.X.GetType()).(*jasmin.ArrayType)
+		result := g.genExpr(e.X)
+		// calculate index expression
+		result = append(result, g.genExpr(e.Index)...)
+		// cast index value to int
+		result = append(result, jasmin.CastPrimitives(g.genType(e.Index.GetType()), jasmin.NewIntType()))
+		// load the element at given index onto the stack
+		result = append(result, jasmin.Aload(arrayType.ElementType))
+		return result
 	}
 	return g.genArrayCompositeExpr(e.Composite)
 }
 
 func (g *genContext) genArrayCompositeExpr(e *ast.ArrayCompositeExpr) jasmin.Sequence {
+	arrayType := g.genType(e.GetType()).(*jasmin.ArrayType)
 
-	return jasmin.NewSequence()
+	var (
+		lenType = jasmin.NewIntType()
+		lenExpr = jasmin.NewSequence(jasmin.Const(0, lenType))
+	)
+	if e.LenExpr != nil {
+		lenExpr = append(
+			g.genExpr(e.LenExpr),
+			jasmin.CastPrimitives(g.genType(e.LenExpr.GetType()), lenType))
+	} else if len(e.Values) > 0 {
+		lenExpr = jasmin.NewSequence(jasmin.Const(len(e.Values), lenType))
+	}
+	result := append(lenExpr, jasmin.NewArray(arrayType.ElementType))
+
+	if e.Default != nil {
+		defaultType := g.genType(e.Default.GetType())
+		defaultLocalNumber := g.method.GetLocalNumber(defaultType)
+		defaultExpr := append(g.genExpr(e.Default), jasmin.Store(defaultLocalNumber, defaultType))
+		result = append(result, defaultExpr...)
+		result = append(result, g.genArrayFiller(defaultLocalNumber, arrayType)...)
+	}
+	indexType := jasmin.NewIntType()
+	for i := 0; i < len(e.Values); i++ {
+		valueExpr := e.Values[i]
+		// load array
+		result = append(result, jasmin.Dup(arrayType))
+		if len(e.Indexes) > 0 {
+			indexExpr := e.Indexes[i]
+			// calculate index expression
+			result = append(result, g.genExpr(indexExpr)...)
+			// cast index value to int
+			result = append(result, jasmin.CastPrimitives(g.genType(indexExpr.GetType()), indexType))
+		} else {
+			if i == 0 {
+				result = append(result, jasmin.Const(i, indexType))
+			} else {
+				result = append(result, jasmin.Const(i, indexType))
+			}
+		}
+		// calculate value expression
+		result = append(result, g.genExpr(valueExpr)...)
+		// store
+		result = append(result, jasmin.Astore(arrayType.ElementType))
+	}
+	return result
+}
+
+func (g *genContext) genSimpleLocalVariable(value any, typ jasmin.Type) (jasmin.Sequence, int) {
+	localNumber := g.method.GetLocalNumber(typ)
+	return jasmin.NewSequence(
+			jasmin.Const(value, typ),
+			jasmin.Store(localNumber, typ)),
+		localNumber
+}
+
+func (g *genContext) genArrayFiller(filler int, arrayType *jasmin.ArrayType) jasmin.Sequence {
+	var (
+		startLabel = g.genLabel("FILLER_START")
+		endLabel   = g.genLabel("FILLER_END")
+	)
+	indexType := jasmin.NewIntType()
+	// initialize an indexing variable
+	result, index := g.genSimpleLocalVariable(0, indexType)
+
+	// start the loop
+	result = append(result, jasmin.NewLabel(startLabel))
+
+	// check if index variable is greater or equal than length and jump to endLabel
+	result = append(result, jasmin.Dup(arrayType), jasmin.ArrayLength(), jasmin.Load(index, indexType))
+	result = append(result, jasmin.IfIcmp("le", endLabel))
+
+	// load array, load index, load filler and store
+	result = append(result,
+		jasmin.Dup(arrayType),
+		jasmin.Load(index, indexType),
+		jasmin.Load(filler, arrayType.ElementType),
+		jasmin.Astore(arrayType.ElementType))
+
+	// increment index
+	result = append(result, jasmin.Iinc(index, 1))
+
+	// jump to the start of the loop
+	result = append(result, jasmin.Goto(startLabel))
+
+	// end the loop
+	result = append(result, jasmin.NewLabel(endLabel))
+
+	return result
 }

@@ -55,6 +55,15 @@ func NewConstInstruction(t Type, v any) *ConstInstruction {
 func (c *ConstInstruction) String() string {
 	switch c.Type.(type) {
 	case *IntType:
+		if v, ok := c.Value.(int64); ok && v >= 0 && v <= 5 {
+			return fmt.Sprintf("iconst_%v", c.Value)
+		} else if v, ok := c.Value.(int); ok && v >= 0 && v <= 5 {
+			return fmt.Sprintf("iconst_%v", c.Value)
+		} else if v, ok := c.Value.(int64); ok && v == -1 {
+			return "iconst_m1"
+		} else if v, ok := c.Value.(int); ok && v == -1 {
+			return "iconst_m1"
+		}
 		return fmt.Sprintf("iconst %v", c.Value)
 	case *LongType:
 		return fmt.Sprintf("ldc2_w %v", c.Value)
@@ -91,7 +100,7 @@ func (s *StoreInstruction) String() string {
 		return fmt.Sprintf("lstore %v", s.Var)
 	case *DoubleType:
 		return fmt.Sprintf("dstore %v", s.Var)
-	case *ReferenceType:
+	case *ReferenceType, *ArrayType:
 		return fmt.Sprintf("astore %v", s.Var)
 	default:
 		panic(fmt.Sprintf("unexpected type: %+v", s.Type))
@@ -122,7 +131,7 @@ func (l *LoadInstruction) String() string {
 		return fmt.Sprintf("lload %v", l.Var)
 	case *DoubleType:
 		return fmt.Sprintf("dload %v", l.Var)
-	case *ReferenceType:
+	case *ReferenceType, *ArrayType:
 		return fmt.Sprintf("aload %v", l.Var)
 	default:
 		panic(fmt.Sprintf("unexpected type: %+v", l.Type))
@@ -472,6 +481,25 @@ func (i *IfInstruction) String() string {
 
 // ---
 
+type IfIcmpInstruction struct {
+	InstructionBase
+	Code  string
+	Label string
+}
+
+func NewIfIcmpInstruction(eq string, label string) *IfIcmpInstruction {
+	return &IfIcmpInstruction{
+		InstructionBase: NewInstructionBase(0, 2),
+		Code:            "if_icmp" + eq,
+		Label:           label,
+	}
+}
+func (i *IfIcmpInstruction) String() string {
+	return fmt.Sprintf("%s %s", i.Code, i.Label)
+}
+
+// ---
+
 type GotoInstruction struct {
 	InstructionBase
 	Label string
@@ -486,6 +514,161 @@ func NewGotoInstruction(label string) *GotoInstruction {
 
 func (i *GotoInstruction) String() string {
 	return fmt.Sprintf("goto %s", i.Label)
+}
+
+// ---
+
+type NewArrayInstruction struct {
+	InstructionBase
+	ElementType Type
+}
+
+func NewNewArrayInstruction(elementType Type) *NewArrayInstruction {
+	return &NewArrayInstruction{
+		InstructionBase: NewInstructionBase(1, 1),
+		ElementType:     elementType,
+	}
+}
+
+func (i *NewArrayInstruction) String() string {
+	switch x := i.ElementType.(type) {
+	case *LongType:
+		return fmt.Sprintf("newarray long")
+	case *DoubleType:
+		return fmt.Sprintf("newarray double")
+	case *IntType:
+		return fmt.Sprintf("newarray int")
+	case *ReferenceType:
+		return fmt.Sprintf("anewarray %s", x.Class)
+	default:
+		panic(fmt.Sprintf("wrong type for newarray instruction: %+v", i.ElementType))
+	}
+}
+
+// ---
+
+type ArrayLengthInstruction struct {
+	InstructionBase
+}
+
+func NewArrayLengthInstruction() *ArrayLengthInstruction {
+	return &ArrayLengthInstruction{
+		InstructionBase: NewInstructionBase(1, 1),
+	}
+}
+
+func (i *ArrayLengthInstruction) String() string {
+	return "arraylength"
+}
+
+// ---
+
+type AstoreInstruction struct {
+	InstructionBase
+	ElementType Type
+}
+
+func NewAstoreInstruction(elementType Type) *AstoreInstruction {
+	return &AstoreInstruction{
+		InstructionBase: NewInstructionBase(0, 2+elementType.StackSlot()),
+		ElementType:     elementType,
+	}
+}
+
+func (i *AstoreInstruction) String() string {
+	switch i.ElementType.(type) {
+	case *LongType:
+		return "lastore"
+	case *DoubleType:
+		return "dastore"
+	case *IntType:
+		return "iastore"
+	case *ReferenceType:
+		return "aastore"
+	default:
+		panic(fmt.Sprintf("wrong type for newarray instruction: %+v", i.ElementType))
+	}
+}
+
+// ---
+
+type AloadInstruction struct {
+	InstructionBase
+	ElementType Type
+}
+
+func NewAloadInstruction(elementType Type) *AloadInstruction {
+	return &AloadInstruction{
+		InstructionBase: NewInstructionBase(elementType.StackSlot(), 2),
+		ElementType:     elementType,
+	}
+}
+
+func (i *AloadInstruction) String() string {
+	switch i.ElementType.(type) {
+	case *LongType:
+		return "laload"
+	case *DoubleType:
+		return "daload"
+	case *IntType:
+		return "iaload"
+	case *ReferenceType:
+		return "aaload"
+	default:
+		panic(fmt.Sprintf("wrong type for newarray instruction: %+v", i.ElementType))
+	}
+}
+
+// --
+
+type CastPrimitivesInstruction struct {
+	InstructionBase
+	FromType Type
+	ToType   Type
+}
+
+func NewCastPrimitivesInstruction(fromType, toType Type) *CastPrimitivesInstruction {
+	return &CastPrimitivesInstruction{
+		InstructionBase: NewInstructionBase(fromType.StackSlot(), toType.StackSlot()),
+		FromType:        fromType,
+		ToType:          toType,
+	}
+}
+
+func (i *CastPrimitivesInstruction) String() string {
+	letter := func(t Type) string {
+		switch t.(type) {
+		case *LongType:
+			return "l"
+		case *DoubleType:
+			return "d"
+		case *IntType:
+			return "i"
+		}
+		panic("cast instruction: wrong type")
+	}
+
+	return fmt.Sprintf("%s2%s", letter(i.FromType), letter(i.ToType))
+}
+
+// --
+
+type IincInstruction struct {
+	InstructionBase
+	Var   int
+	Value any
+}
+
+func NewIincInstruction(localVar int, value any) *IincInstruction {
+	return &IincInstruction{
+		InstructionBase: NewInstructionBase(0, 0),
+		Var:             localVar,
+		Value:           value,
+	}
+}
+
+func (i *IincInstruction) String() string {
+	return fmt.Sprintf("iinc %d %v", i.Var, i.Value)
 }
 
 // ---

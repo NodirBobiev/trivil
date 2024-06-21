@@ -17,7 +17,7 @@ import (
 
 const (
 	trivilPath = "/home/cyrus/trivil/src/trivil"
-	jasminPath = "/home/cyrus/Downloads/jasmin-2.4/jasmin.jar"
+	jasminPath = "/home/cyrus/trivil/jasmin-2.4/jasmin.jar"
 	javaPath   = "/usr/bin/java"
 )
 

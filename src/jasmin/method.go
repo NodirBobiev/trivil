@@ -47,6 +47,12 @@ func (m *Method) AssignNumber(v *Variable) *Variable {
 	m.Locals += v.GetType().StackSlot()
 	return v
 }
+func (m *Method) GetLocalNumber(t Type) int {
+	v := m.Locals
+	m.Locals += t.StackSlot()
+	return v
+}
+
 func (m *Method) String() string {
 	var (
 		static string

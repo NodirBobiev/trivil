@@ -7,6 +7,7 @@ import (
 func Name(s ...string) string {
 	return strings.Join(s, "/")
 }
+
 func Const(value any, typ Type) Instruction {
 	return NewConstInstruction(typ, value)
 }
@@ -79,7 +80,25 @@ func Cmp(t Type) Instruction { return NewCmpInstruction(t) }
 
 func If(eq string, nextLabel string) Instruction { return NewIfInstruction(eq, nextLabel) }
 
+func IfIcmp(eq string, nextLabel string) Instruction { return NewIfIcmpInstruction(eq, nextLabel) }
+
 func Goto(label string) Instruction { return NewGotoInstruction(label) }
+
+func NewArray(elementType Type) Instruction { return NewNewArrayInstruction(elementType) }
+
+func ArrayLength() Instruction { return NewArrayLengthInstruction() }
+
+func Astore(elementType Type) Instruction { return NewAstoreInstruction(elementType) }
+
+func Aload(elementType Type) Instruction { return NewAloadInstruction(elementType) }
+
+func CastPrimitives(fromType, toType Type) Instruction {
+	return NewCastPrimitivesInstruction(fromType, toType)
+}
+
+func Iinc(localVar int, value any) Instruction {
+	return NewIincInstruction(localVar, value)
+}
 
 // ---
 
