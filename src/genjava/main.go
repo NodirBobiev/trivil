@@ -5,6 +5,7 @@ import (
 	"trivil/ast"
 	"trivil/env"
 	"trivil/jasmin"
+	"trivil/lexer"
 )
 
 const (
@@ -146,6 +147,12 @@ func (g *genContext) genStatement(s ast.Statement) {
 		g.genBreak(x)
 	case *ast.Cycle:
 		g.genCycle(x)
+	case *ast.Guard:
+		g.genGuard(x)
+	case *ast.IncStatement:
+		g.genIncStatement(x)
+	case *ast.DecStatement:
+		g.genDecStatement(x)
 	default:
 		panic(fmt.Sprintf("unexpected statements: %+v", s))
 	}
@@ -312,4 +319,31 @@ func (g *genContext) genCycle(s *ast.Cycle) {
 		jasmin.Iinc(indexVar, 1),
 		jasmin.Goto(startLabel),
 		jasmin.NewLabel(endLabel))
+}
+
+func (g *genContext) genCond(cond ast.Expr, skipLabel string, convF func(lexer lexer.Token) string) jasmin.Sequence {
+	// expect the condition is given in form of a binary expression
+	bin, _ := cond.(*ast.BinaryExpr)
+	// calculate left and right side of binary expression
+	result := append(g.genExpr(bin.X), g.genExpr(bin.Y)...)
+	// compare and jump to skipLabel if the condition doesn't hold
+	result = append(result,
+		jasmin.Cmp(g.genType(bin.X.GetType())),
+		jasmin.If(convF(bin.Op), skipLabel))
+	return result
+}
+
+func (g *genContext) genGuard(s *ast.Guard) {
+	continueLabel := g.genLabel("GUARD_CONTINUE")
+	g.method.Append(g.genCond(s.Cond, continueLabel, stringify)...)
+	g.genStatement(s.Else)
+	g.method.Append(jasmin.NewLabel(continueLabel))
+}
+
+func (g *genContext) genIncStatement(s *ast.IncStatement) {
+
+}
+
+func (g *genContext) genDecStatement(s *ast.DecStatement) {
+
 }

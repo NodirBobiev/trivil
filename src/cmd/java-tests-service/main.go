@@ -310,6 +310,38 @@ var tests = []common.Test{
 		PackagePath: "/home/cyrus/trivil/examples/simples/цикл/пустой-вектор",
 		OutputPath:  "/home/cyrus/trivil/examples/simples/цикл/пустой-вектор/output.txt",
 	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-надо-вернуть",
+		},
+		ProgramName: "надо-вернуть",
+		PackagePath: "/home/cyrus/trivil/examples/simples/надо/надо-вернуть",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/надо/надо-вернуть/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-надо-не-вернуть",
+		},
+		ProgramName: "надо-не-вернуть",
+		PackagePath: "/home/cyrus/trivil/examples/simples/надо/надо-не-вернуть",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/надо/надо-не-вернуть/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-надо-не-прервать",
+		},
+		ProgramName: "надо-не-прервать",
+		PackagePath: "/home/cyrus/trivil/examples/simples/надо/надо-не-прервать",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/надо/надо-не-прервать/output.txt",
+	},
+	&scenarious.SimpleTest{
+		TestBase: common.TestBase{
+			Name: "простой-надо-прервать",
+		},
+		ProgramName: "надо-прервать",
+		PackagePath: "/home/cyrus/trivil/examples/simples/надо/надо-прервать",
+		OutputPath:  "/home/cyrus/trivil/examples/simples/надо/надо-прервать/output.txt",
+	},
 }
 
 func runTest(t common.Test) error {
