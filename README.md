@@ -1,6 +1,6 @@
 # Trivil Programming Language
 
-The Trivil Programming Language was designed by Alexey Nedorya. This repository contains the implementation of a code generator targeting the JVM for Trivil, developed as part of a university thesis.
+This repository contains the implementation of a code generator targeting the JVM for Trivil programming language, developed as part of a university thesis.
 
 ## Repository Contents
 
